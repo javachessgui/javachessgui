@@ -1,6 +1,7 @@
 package javachessgui;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Hashtable;
 import javafx.event.ActionEvent;
 import javafx.scene.canvas.GraphicsContext;
@@ -18,12 +19,23 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.control.TextField;
 
+import java.io.IOException;
+
 public class Board {
     
     ////////////////////////////////////////////////////////
     // static members
-    Thread engine_read_thread;
-    Thread engine_write_thread;
+    private MyRunnable runnable_engine_read_thread;
+    private MyRunnable runnable_engine_write_thread;
+    
+    private Thread engine_read_thread;
+    private Thread engine_write_thread;
+    
+    private ProcessBuilder uci_engine_process_builder;
+    private Process uci_engine_process;
+    
+    private InputStream engine_in;
+    private OutputStream engine_out;
     
     final static int TURN_WHITE=1;
     final static int TURN_BLACK=-1;
@@ -525,6 +537,8 @@ public class Board {
     {
         engine_read_thread.interrupt();
         engine_write_thread.interrupt();
+        
+        uci_engine_process.destroy();
     }
     	
     public Board()
@@ -571,10 +585,30 @@ public class Board {
             }
         });
         
+        Button engine_go_button=new Button();
+        engine_go_button.setText("Go");
+        engine_go_button.setOnAction(new EventHandler<ActionEvent>() {
+            @Override public void handle(ActionEvent e) {
+                String fen=report_fen();
+                runnable_engine_write_thread.command=
+                        "position fen "+fen+"\ngo infinite\n";
+            }
+        });
+        
+        Button engine_stop_button=new Button();
+        engine_stop_button.setText("Stop");
+        engine_stop_button.setOnAction(new EventHandler<ActionEvent>() {
+            @Override public void handle(ActionEvent e) {
+                runnable_engine_write_thread.command="stop\n";
+            }
+        });
+        
         controls_box.getChildren().add(flip_button);
         controls_box.getChildren().add(set_fen_button);
         controls_box.getChildren().add(report_fen_button);
         controls_box.getChildren().add(stop_engine_process_button);
+        controls_box.getChildren().add(engine_go_button);
+        controls_box.getChildren().add(engine_stop_button);
         
         vertical_box.getChildren().add(canvas_group);
         
@@ -596,15 +630,32 @@ public class Board {
         
         drawBoard();
         
-        MyRunnable runnable_engine_thread=new MyRunnable();
-        runnable_engine_thread.kind="engine_read";
-        engine_read_thread=new Thread(runnable_engine_thread);
+        uci_engine_process_builder=new ProcessBuilder("c:\\unzip\\chessgui\\uciengine.exe");
         
-        MyRunnable runnable_engine_write_thread=new MyRunnable();
+        try {
+               uci_engine_process=uci_engine_process_builder.start();
+               } catch(IOException ex) {
+               
+               }
+        
+        engine_in=uci_engine_process.getInputStream();
+        engine_out=uci_engine_process.getOutputStream();
+        
+        runnable_engine_read_thread=new MyRunnable();
+        runnable_engine_read_thread.kind="engine_read";
+        runnable_engine_read_thread.std_in=engine_in;
+        engine_read_thread=new Thread(runnable_engine_read_thread);
+        
+        runnable_engine_write_thread=new MyRunnable();
         runnable_engine_write_thread.kind="engine_write";
+        runnable_engine_write_thread.std_out=engine_out;
+        runnable_engine_write_thread.command="";
         engine_write_thread=new Thread(runnable_engine_write_thread);
 
         engine_read_thread.start();
         engine_write_thread.start();
+        
+        
+        
     }
 }
