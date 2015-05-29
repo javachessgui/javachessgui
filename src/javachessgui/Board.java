@@ -22,6 +22,9 @@ public class Board {
     
     ////////////////////////////////////////////////////////
     // static members
+    Thread engine_read_thread;
+    Thread engine_write_thread;
+    
     final static int TURN_WHITE=1;
     final static int TURN_BLACK=-1;
     
@@ -517,6 +520,12 @@ public class Board {
         
         is_drag_going=false;
     }
+    
+    public void stop_engine_process()
+    {
+        engine_read_thread.interrupt();
+        engine_write_thread.interrupt();
+    }
     	
     public Board()
     {
@@ -554,9 +563,18 @@ public class Board {
             }
         });
         
+        Button stop_engine_process_button=new Button();
+        stop_engine_process_button.setText("Stop Engine Process");
+        stop_engine_process_button.setOnAction(new EventHandler<ActionEvent>() {
+            @Override public void handle(ActionEvent e) {
+                stop_engine_process();
+            }
+        });
+        
         controls_box.getChildren().add(flip_button);
         controls_box.getChildren().add(set_fen_button);
         controls_box.getChildren().add(report_fen_button);
+        controls_box.getChildren().add(stop_engine_process_button);
         
         vertical_box.getChildren().add(canvas_group);
         
@@ -577,5 +595,16 @@ public class Board {
         piece_color=Color.rgb(0, 0, 0);
         
         drawBoard();
+        
+        MyRunnable runnable_engine_thread=new MyRunnable();
+        runnable_engine_thread.kind="engine_read";
+        engine_read_thread=new Thread(runnable_engine_thread);
+        
+        MyRunnable runnable_engine_write_thread=new MyRunnable();
+        runnable_engine_write_thread.kind="engine_write";
+        engine_write_thread=new Thread(runnable_engine_write_thread);
+
+        engine_read_thread.start();
+        engine_write_thread.start();
     }
 }
