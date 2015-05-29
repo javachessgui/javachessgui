@@ -1,5 +1,6 @@
 package javachessgui;
 
+import java.io.*;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Hashtable;
@@ -26,10 +27,17 @@ import javafx.scene.control.TextArea;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import java.io.FileWriter;
+import java.io.BufferedWriter;
+import java.io.BufferedReader;
+import java.io.FileReader;
+
 public class Board {
     
     ////////////////////////////////////////////////////////
     // static members
+    private static String uci_engine_path;
+    
     private MyRunnable runnable_engine_read_thread;
     private MyRunnable runnable_engine_write_thread;
     
@@ -126,6 +134,84 @@ public class Board {
 
     public static void init_class()
     {
+        
+        ////////////////////////////////////////////
+        // read config
+        
+        uci_engine_path="";
+        
+        File f = new File("config.txt");
+        if(f.exists())
+        {
+            FileReader fr=null;
+            try {
+               fr=new FileReader("config.txt");
+               } catch(IOException ex) {
+               
+               }
+            
+            BufferedReader br=new BufferedReader(fr);
+            
+            String CurrentLine=null;
+            
+            do
+            {
+            try {
+               CurrentLine = br.readLine();
+               } catch(IOException ex) {
+               
+               }
+            
+            if(CurrentLine!=null)
+            {
+                Pattern get_pv = Pattern.compile("(engine=)(.*)");
+                Matcher pv_matcher = get_pv.matcher(CurrentLine);
+
+                if (pv_matcher.find( )) {
+                   uci_engine_path=pv_matcher.group(2);
+                   System.out.println("engine path: "+uci_engine_path);
+                }
+            }
+            
+            }while(CurrentLine!=null);
+ 
+            
+        }
+        else
+        {
+            try {
+               f.createNewFile();
+               } catch(IOException ex) {
+               
+               }
+            
+            FileWriter fw=null;
+            try {
+               fw = new FileWriter(f.getAbsoluteFile());
+               } catch(IOException ex) {
+               
+               }
+            
+            BufferedWriter bw = new BufferedWriter(fw);
+                     
+            try {
+               bw.write("");
+               } catch(IOException ex) {
+               
+               }
+            
+            try {
+               bw.close();
+               } catch(IOException ex) {
+               
+               }
+            
+        
+        }
+        
+        //uci_engine_path="";    
+        
+        ////////////////////////////////////////////
         
         piece_size=45;
         padding=5;
@@ -628,38 +714,44 @@ public class Board {
             }
         });
         
-        Button stop_engine_process_button=new Button();
-        stop_engine_process_button.setText("Stop Engine Process");
-        stop_engine_process_button.setOnAction(new EventHandler<ActionEvent>() {
-            @Override public void handle(ActionEvent e) {
-                stop_engine_process();
-            }
-        });
-        
-        Button engine_go_button=new Button();
-        engine_go_button.setText("Go");
-        engine_go_button.setOnAction(new EventHandler<ActionEvent>() {
-            @Override public void handle(ActionEvent e) {
-                String fen=report_fen();
-                runnable_engine_write_thread.command=
-                        "position fen "+fen+"\ngo infinite\n";
-            }
-        });
-        
-        Button engine_stop_button=new Button();
-        engine_stop_button.setText("Stop");
-        engine_stop_button.setOnAction(new EventHandler<ActionEvent>() {
-            @Override public void handle(ActionEvent e) {
-                runnable_engine_write_thread.command="stop\n";
-            }
-        });
-        
         controls_box.getChildren().add(flip_button);
         controls_box.getChildren().add(set_fen_button);
         controls_box.getChildren().add(report_fen_button);
-        controls_box.getChildren().add(stop_engine_process_button);
-        controls_box.getChildren().add(engine_go_button);
-        controls_box.getChildren().add(engine_stop_button);
+        
+        if(uci_engine_path!="")
+        {
+        
+            Button stop_engine_process_button=new Button();
+            stop_engine_process_button.setText("Stop Engine Process");
+            stop_engine_process_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    stop_engine_process();
+                }
+            });
+
+            Button engine_go_button=new Button();
+            engine_go_button.setText("Go");
+            engine_go_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    String fen=report_fen();
+                    runnable_engine_write_thread.command=
+                            "position fen "+fen+"\ngo infinite\n";
+                }
+            });
+
+            Button engine_stop_button=new Button();
+            engine_stop_button.setText("Stop");
+            engine_stop_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    runnable_engine_write_thread.command="stop\n";
+                }
+            });
+            
+            controls_box.getChildren().add(stop_engine_process_button);
+            controls_box.getChildren().add(engine_go_button);
+            controls_box.getChildren().add(engine_stop_button);
+            
+        }
         
         vertical_box.getChildren().add(canvas_group);
         
@@ -669,7 +761,10 @@ public class Board {
         
         engine_text.setMaxHeight(100);
         
-        vertical_box.getChildren().add(engine_text);
+        if(uci_engine_path!="")
+        {
+            vertical_box.getChildren().add(engine_text);
+        }
         
         upper_canvas.setOnMouseDragged(mouseHandler);
         upper_canvas.setOnMouseClicked(mouseHandler);
@@ -685,33 +780,36 @@ public class Board {
         
         drawBoard();
         
-        uci_engine_process_builder=new ProcessBuilder("c:\\unzip\\chessgui\\uciengine.exe");
+        if(uci_engine_path!="")
+        {
         
-        try {
-               uci_engine_process=uci_engine_process_builder.start();
-               } catch(IOException ex) {
-               
-               }
-        
-        engine_in=uci_engine_process.getInputStream();
-        engine_out=uci_engine_process.getOutputStream();
-        
-        runnable_engine_read_thread=new MyRunnable();
-        runnable_engine_read_thread.kind="engine_read";
-        runnable_engine_read_thread.std_in=engine_in;
-        runnable_engine_read_thread.b=this;
-        engine_read_thread=new Thread(runnable_engine_read_thread);
-        
-        runnable_engine_write_thread=new MyRunnable();
-        runnable_engine_write_thread.kind="engine_write";
-        runnable_engine_write_thread.std_out=engine_out;
-        runnable_engine_write_thread.command="";
-        engine_write_thread=new Thread(runnable_engine_write_thread);
+            uci_engine_process_builder=new ProcessBuilder(uci_engine_path);
 
-        engine_read_thread.start();
-        engine_write_thread.start();
-        
-        
+            try {
+                   uci_engine_process=uci_engine_process_builder.start();
+                   } catch(IOException ex) {
+
+                   }
+
+            engine_in=uci_engine_process.getInputStream();
+            engine_out=uci_engine_process.getOutputStream();
+
+            runnable_engine_read_thread=new MyRunnable();
+            runnable_engine_read_thread.kind="engine_read";
+            runnable_engine_read_thread.std_in=engine_in;
+            runnable_engine_read_thread.b=this;
+            engine_read_thread=new Thread(runnable_engine_read_thread);
+
+            runnable_engine_write_thread=new MyRunnable();
+            runnable_engine_write_thread.kind="engine_write";
+            runnable_engine_write_thread.std_out=engine_out;
+            runnable_engine_write_thread.command="";
+            engine_write_thread=new Thread(runnable_engine_write_thread);
+
+            engine_read_thread.start();
+            engine_write_thread.start();
+            
+        }
         
     }
 }
