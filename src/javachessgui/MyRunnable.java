@@ -33,7 +33,7 @@ public class MyRunnable implements Runnable {
                     if(chunk=='\n')
                     {
                         //total_buffer=buffer+"\n"+total_buffer;
-                        b.engine_text.setText(buffer);
+                        b.consume_engine_out(buffer);
                         buffer="";
                     }
                     else

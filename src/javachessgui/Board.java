@@ -23,6 +23,9 @@ import java.io.IOException;
 
 import javafx.scene.control.TextArea;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class Board {
     
     ////////////////////////////////////////////////////////
@@ -111,9 +114,16 @@ public class Board {
     private Color board_color;
     private Color piece_color;
     ////////////////////////////////////////////////////////
-	
     
-    
+    ////////////////////////////////////////////////////////
+    // uci out
+    private int depth;
+    private String pv;
+    private int score_cp;
+    private int score_mate;
+    private String score_verbal;
+    ////////////////////////////////////////////////////////
+
     public static void init_class()
     {
         
@@ -164,6 +174,39 @@ public class Board {
         translit_dark.put('k','L');
        
         //System.out.println("board class init complete");
+    }
+    
+    public void consume_engine_out(String uci)
+    {
+        Pattern get_pv = Pattern.compile("( pv )(.*)");
+        Matcher pv_matcher = get_pv.matcher(uci);
+        
+        if (pv_matcher.find( )) {
+           pv=pv_matcher.group(2);
+        }
+        
+        Pattern get_depth = Pattern.compile("(depth )([^ ]+)");
+        Matcher depth_matcher = get_depth.matcher(uci);
+        
+        if (depth_matcher.find( )) {
+           depth=Integer.parseInt(depth_matcher.group(2));
+        }
+        
+        Pattern get_score_cp = Pattern.compile("(score cp )([^ ]+)");
+        Matcher score_cp_matcher = get_score_cp.matcher(uci);
+        
+        if (score_cp_matcher.find( )) {
+           score_cp=Integer.parseInt(depth_matcher.group(2));
+        }
+
+        if(pv!="")
+        {
+            engine_text.setText(
+                    "depth "+depth+
+                    "\npv "+pv+
+                    "\nscore cp "+score_cp
+            );
+        }
     }
     
     private Boolean is_dark_square(int i,int j)
@@ -547,6 +590,11 @@ public class Board {
     public Board()
     {
         
+        pv="";
+        depth=0;
+        score_mate=0;
+        score_cp=0;
+        score_verbal="";
         
         flip=false;
         
