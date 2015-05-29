@@ -21,6 +21,8 @@ import javafx.scene.control.TextField;
 
 import java.io.IOException;
 
+import javafx.scene.control.TextArea;
+
 public class Board {
     
     ////////////////////////////////////////////////////////
@@ -91,6 +93,7 @@ public class Board {
     private HBox controls_box=new HBox(2);
     
     private TextField fen_text = new TextField ();
+    public TextArea engine_text = new TextArea ();
     
     public Canvas canvas;
     public Canvas upper_canvas;
@@ -616,6 +619,10 @@ public class Board {
         
         vertical_box.getChildren().add(controls_box);
         
+        engine_text.setMaxHeight(100);
+        
+        vertical_box.getChildren().add(engine_text);
+        
         upper_canvas.setOnMouseDragged(mouseHandler);
         upper_canvas.setOnMouseClicked(mouseHandler);
         upper_canvas.setOnMouseReleased(mouseHandler);
@@ -644,6 +651,7 @@ public class Board {
         runnable_engine_read_thread=new MyRunnable();
         runnable_engine_read_thread.kind="engine_read";
         runnable_engine_read_thread.std_in=engine_in;
+        runnable_engine_read_thread.b=this;
         engine_read_thread=new Thread(runnable_engine_read_thread);
         
         runnable_engine_write_thread=new MyRunnable();
