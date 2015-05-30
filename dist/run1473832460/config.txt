@@ -1,0 +1,1 @@
+engine=c:\unzip\chessgui\uciengine.exe

@@ -108,9 +108,11 @@ public class Board {
     
     public Canvas canvas;
     public Canvas upper_canvas;
+    public Canvas engine_canvas;
     
     private GraphicsContext gc;
     private GraphicsContext upper_gc;
+    private GraphicsContext engine_gc;
     
     private static int padding;
     private static int piece_size;
@@ -121,15 +123,20 @@ public class Board {
     
     private Color board_color;
     private Color piece_color;
+    private Color engine_color;
     ////////////////////////////////////////////////////////
     
     ////////////////////////////////////////////////////////
     // uci out
     private int depth;
     private String pv;
+    private String bestmove_algeb;
+    Move bestmove;
+    Move makemove=new Move();
     private int score_cp;
     private int score_mate;
     private String score_verbal;
+    private Boolean engine_running;
     ////////////////////////////////////////////////////////
 
     public static void init_class()
@@ -264,11 +271,25 @@ public class Board {
     
     public void consume_engine_out(String uci)
     {
+        
+        System.out.println("uci out "+uci);
+        
+        Pattern get_bestmove = Pattern.compile("(bestmove )(.*)");
+        Matcher bestmove_matcher = get_bestmove.matcher(uci);
+        
+        if (bestmove_matcher.find( )) {
+           engine_running=false;
+           return;
+        }
+        
         Pattern get_pv = Pattern.compile("( pv )(.*)");
         Matcher pv_matcher = get_pv.matcher(uci);
         
         if (pv_matcher.find( )) {
            pv=pv_matcher.group(2);
+           String[] pv_parts=pv.split(" ");
+           
+           bestmove_algeb=pv_parts[0];
         }
         
         Pattern get_depth = Pattern.compile("(depth )([^ ]+)");
@@ -290,9 +311,32 @@ public class Board {
             engine_text.setText(
                     "depth "+depth+
                     "\npv "+pv+
-                    "\nscore cp "+score_cp
+                    "\nscore cp "+score_cp+
+                    "\nbestmove "+bestmove_algeb
             );
         }
+        
+        if((bestmove_algeb!="")&&(bestmove_algeb!=null))
+        {
+            
+            
+            
+            bestmove.from_algeb(bestmove_algeb);
+            
+            int shift=(int)((piece_size)/2);
+
+            int from_x=gc_x(bestmove.i1)+shift;
+            int from_y=gc_y(bestmove.j1)+shift;
+            int to_x=gc_x(bestmove.i2)+shift;
+            int to_y=gc_y(bestmove.j2)+shift;
+
+            engine_gc.clearRect(0,0,board_size,board_size);
+            
+            engine_gc.setStroke(engine_color);
+            engine_gc.setLineWidth(3);
+            engine_gc.strokeLine(from_x, from_y+padding, to_x, to_y+padding);
+        }
+        
     }
     
     private Boolean is_dark_square(int i,int j)
@@ -554,7 +598,11 @@ public class Board {
                 +" "
                 +castling_rights
                 +" "
-                +ep_square_algeb;
+                +ep_square_algeb
+                +" "
+                +halfmove_clock
+                +" "
+                +fullmove_number;
         
         return(fen);
     }
@@ -562,6 +610,23 @@ public class Board {
     public void flip()
     {
         flip=!flip;
+        drawBoard();
+    }
+    
+    private void make_move(Move m)
+    {
+        m.orig_piece=board[m.i1][m.j1];
+        board[m.i1][m.j1]=' ';
+        board[m.i2][m.j2]=m.orig_piece;
+        turn=-turn;
+    }
+    
+    private void make_move_show(Move m)
+    {
+        make_move(m);
+        
+        engine_gc.clearRect(0,0,board_size,board_size);
+        
         drawBoard();
     }
     
@@ -593,20 +658,19 @@ public class Board {
                     
                         drag_to_x=gc_x(drag_to_i);
                         drag_to_y=gc_y(drag_to_j);
-
-                        board[drag_from_i][drag_from_j]=' ';
-
-                        board[drag_to_i][drag_to_j]=orig_piece;
                         
-                        turn=-turn;
+                        makemove.i1=drag_from_i;
+                        makemove.j1=drag_from_j;
+                        makemove.i2=drag_to_i;
+                        makemove.j2=drag_to_j;
+                        
+                        make_move_show(makemove);
 
                     }
                     else
                     {
                         //board[drag_from_i][drag_from_j]=orig_piece;
                     }
-                    
-                    drawBoard();
                 
                 }
                 
@@ -672,22 +736,56 @@ public class Board {
         
         uci_engine_process.destroy();
     }
+    
+    private void go_infinite()
+    {
+        String fen=report_fen();
+        runnable_engine_write_thread.command=
+                "position fen "+fen+"\ngo infinite\n";
+        engine_running=true;
+    }
+    
+    private void stop_engine()
+    {
+        
+        runnable_engine_write_thread.command=
+                                "stop\n";
+        
+        System.out.println("waiting for engine to stop");
+        
+        while(engine_running){
+            try {
+                        Thread.sleep(500);
+                        } catch(InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        }
+            
+        System.out.println("engine stopped ok");
+            
+        }
+        
+    }
     	
     public Board()
     {
         
         pv="";
+        bestmove_algeb="";
+        bestmove=new Move();
         depth=0;
         score_mate=0;
         score_cp=0;
         score_verbal="";
+        engine_running=false;
         
         flip=false;
         
         canvas=new Canvas(board_size,board_size+info_bar_size);
         upper_canvas=new Canvas(board_size,board_size);
+        engine_canvas=new Canvas(board_size,board_size);
         
         canvas_group.getChildren().add(canvas);
+        canvas_group.getChildren().add(engine_canvas);
         canvas_group.getChildren().add(upper_canvas);
         
         Button flip_button=new Button();
@@ -714,9 +812,12 @@ public class Board {
             }
         });
         
+        
+        
         controls_box.getChildren().add(flip_button);
         controls_box.getChildren().add(set_fen_button);
         controls_box.getChildren().add(report_fen_button);
+        
         
         if(uci_engine_path!="")
         {
@@ -733,9 +834,10 @@ public class Board {
             engine_go_button.setText("Go");
             engine_go_button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                    String fen=report_fen();
-                    runnable_engine_write_thread.command=
-                            "position fen "+fen+"\ngo infinite\n";
+                    if(!engine_running)
+                    {
+                        go_infinite();
+                    }
                 }
             });
 
@@ -743,13 +845,39 @@ public class Board {
             engine_stop_button.setText("Stop");
             engine_stop_button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                    runnable_engine_write_thread.command="stop\n";
+                    stop_engine();
                 }
             });
             
-            controls_box.getChildren().add(stop_engine_process_button);
+            Button engine_make_button=new Button();
+            engine_make_button.setText("Make");
+            engine_make_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    if((bestmove_algeb!="")&&(bestmove_algeb!=null))
+                    {
+                        
+                        Boolean restart=false;
+                        if(engine_running)
+                        {
+                            restart=true;
+                            stop_engine();
+                        }
+                        
+                        bestmove.from_algeb(bestmove_algeb);
+                        make_move_show(bestmove);
+                        
+                        if(restart)
+                        {
+                            go_infinite();
+                        }
+                    }
+                }
+            });
+            
+            //controls_box.getChildren().add(stop_engine_process_button);
             controls_box.getChildren().add(engine_go_button);
             controls_box.getChildren().add(engine_stop_button);
+            controls_box.getChildren().add(engine_make_button);
             
         }
         
@@ -772,11 +900,13 @@ public class Board {
         
         gc = canvas.getGraphicsContext2D();
         upper_gc = upper_canvas.getGraphicsContext2D();
+        engine_gc = engine_canvas.getGraphicsContext2D();
         
         reset();
         
         board_color=Color.rgb(255, 220, 220);
         piece_color=Color.rgb(0, 0, 0);
+        engine_color=Color.rgb(0, 0, 255);
         
         drawBoard();
         
