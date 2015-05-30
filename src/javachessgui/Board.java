@@ -31,6 +31,7 @@ import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import javafx.application.Platform;
 
 public class Board {
     
@@ -124,6 +125,11 @@ public class Board {
     private Color board_color;
     private Color piece_color;
     private Color engine_color;
+    private int color_r;
+    private int color_g;
+    private int color_b;
+    private Color score_color;
+    private Font engine_font=new Font("Courier New",12);
     ////////////////////////////////////////////////////////
     
     ////////////////////////////////////////////////////////
@@ -136,6 +142,7 @@ public class Board {
     private int score_cp;
     private int score_mate;
     private String score_verbal;
+    private int score_numerical;
     private Boolean engine_running;
     ////////////////////////////////////////////////////////
 
@@ -269,6 +276,98 @@ public class Board {
         //System.out.println("board class init complete");
     }
     
+    private void update_engine()
+    {
+        if((bestmove_algeb!="")&&(bestmove_algeb!=null))
+        {
+            
+            color_r=0;
+            color_g=0;
+            
+            int color_limit=500;
+            int draw_limit=80;
+            int min_color=127;
+            
+            color_b=min_color;
+            
+            if(score_numerical<-color_limit)
+            {
+                color_r=255;
+                color_b=0;
+            }
+            else if(score_numerical<-draw_limit)
+            {
+                color_r=-score_numerical/color_limit*255;
+                if(color_r<min_color){color_r=min_color;}
+                color_b=0;
+            }
+            
+            if(score_numerical>color_limit)
+            {
+                color_g=255;
+                color_b=0;
+            }
+            else if(score_numerical>draw_limit)
+            {
+                color_g=score_numerical/color_limit*255;
+                if(color_g<min_color){color_g=min_color;}
+                color_b=0;
+            }
+            
+            score_color=Color.rgb(color_r,color_g,color_b);
+            
+            bestmove.from_algeb(bestmove_algeb);
+            
+            int shift=(int)((piece_size)/2);
+
+            int from_x=gc_x(bestmove.i1)+shift;
+            int from_y=gc_y(bestmove.j1)+shift;
+            int to_x=gc_x(bestmove.i2)+shift;
+            int to_y=gc_y(bestmove.j2)+shift;
+            
+            Platform.runLater(new Runnable()
+            {
+               public void run()
+               {
+                   engine_text.setFont(engine_font);
+            
+                    engine_text.setText(
+                            "depth "+depth+
+                            "\npv "+pv+
+                            "\nscore "+score_verbal+
+                            "\nscore numerical "+score_numerical+
+                            "\nbestmove "+bestmove_algeb
+                    );
+
+                    engine_gc.clearRect(0,0,board_size,board_size);
+
+                    //System.out.println("r "+color_r+" g "+color_g+" b "+color_b);
+
+                    engine_gc.setStroke(score_color);
+                    engine_gc.setLineWidth(10);
+                    engine_gc.strokeRect(0, 0, board_size, board_size);
+
+
+                    engine_gc.setStroke(engine_color);
+                    engine_gc.setLineWidth(3);
+                    engine_gc.strokeLine(from_x, from_y+padding, to_x, to_y+padding);
+               }
+            });
+            
+        }
+        else
+        {
+            Platform.runLater(new Runnable()
+            {
+               public void run()
+               {
+                engine_gc.clearRect(0,0,board_size,board_size);
+                engine_text.setText("");
+               }
+            });
+        }
+    }
+    
     public void consume_engine_out(String uci)
     {
         
@@ -282,7 +381,7 @@ public class Board {
            return;
         }
         
-        Pattern get_pv = Pattern.compile("( pv )(.*)");
+        Pattern get_pv = Pattern.compile("( pv )(.{4,})");
         Matcher pv_matcher = get_pv.matcher(uci);
         
         if (pv_matcher.find( )) {
@@ -303,39 +402,27 @@ public class Board {
         Matcher score_cp_matcher = get_score_cp.matcher(uci);
         
         if (score_cp_matcher.find( )) {
-           score_cp=Integer.parseInt(depth_matcher.group(2));
-        }
-
-        if(pv!="")
-        {
-            engine_text.setText(
-                    "depth "+depth+
-                    "\npv "+pv+
-                    "\nscore cp "+score_cp+
-                    "\nbestmove "+bestmove_algeb
-            );
+           score_cp=Integer.parseInt(score_cp_matcher.group(2));
+           score_verbal="cp "+score_cp;
+           score_numerical=score_cp;
         }
         
-        if((bestmove_algeb!="")&&(bestmove_algeb!=null))
-        {
-            
-            
-            
-            bestmove.from_algeb(bestmove_algeb);
-            
-            int shift=(int)((piece_size)/2);
-
-            int from_x=gc_x(bestmove.i1)+shift;
-            int from_y=gc_y(bestmove.j1)+shift;
-            int to_x=gc_x(bestmove.i2)+shift;
-            int to_y=gc_y(bestmove.j2)+shift;
-
-            engine_gc.clearRect(0,0,board_size,board_size);
-            
-            engine_gc.setStroke(engine_color);
-            engine_gc.setLineWidth(3);
-            engine_gc.strokeLine(from_x, from_y+padding, to_x, to_y+padding);
+        Pattern get_score_mate = Pattern.compile("(score mate )([^ ]+)");
+        Matcher score_mate_matcher = get_score_mate.matcher(uci);
+        
+        if (score_mate_matcher.find( )) {
+           score_mate=Integer.parseInt(score_mate_matcher.group(2));
+           score_verbal="mate "+score_mate;
+           score_numerical=
+                   score_mate<0?
+                   -10000-score_mate
+                   :
+                   10000-score_mate
+                   ;
         }
+        
+
+        update_engine();
         
     }
     
@@ -456,6 +543,8 @@ public class Board {
         gc.strokeRect(0, 0, board_size, board_size);
         
         fen_text.setText(report_fen());
+        
+        update_engine();
         
     }
     
@@ -625,6 +714,7 @@ public class Board {
     {
         
         Boolean restart=false;
+        
         if(engine_running)
         {
             restart=true;
@@ -633,7 +723,7 @@ public class Board {
         
         make_move(m);
         
-        engine_gc.clearRect(0,0,board_size,board_size);
+        bestmove_algeb="";
         
         drawBoard();
         
@@ -726,6 +816,8 @@ public class Board {
     
     private void reset()
     {
+        stop_engine();
+        
         rep="rnbqkbnrpppppppp                                PPPPPPPPRNBQKBNR";
          
         rep_to_board(rep);
@@ -740,6 +832,10 @@ public class Board {
         turn=TURN_WHITE;
         
         is_drag_going=false;
+        
+        bestmove_algeb="";
+        
+        drawBoard();
     }
     
     public void stop_engine_process()
@@ -761,19 +857,22 @@ public class Board {
     private void stop_engine()
     {
         
-        runnable_engine_write_thread.command=
-                                "stop\n";
-        
-        System.out.println("waiting for engine to stop");
-        
-        while(engine_running){
-            try {
-                        Thread.sleep(100);
-                        } catch(InterruptedException ex) {
-                        Thread.currentThread().interrupt();
-                        }
-            
-        System.out.println("engine stopped ok");
+        if(engine_running)
+        {
+            runnable_engine_write_thread.command=
+                                    "stop\n";
+
+            System.out.println("waiting for engine to stop");
+
+            while(engine_running){
+                try {
+                            Thread.sleep(100);
+                            } catch(InterruptedException ex) {
+                            Thread.currentThread().interrupt();
+                            }
+
+            System.out.println("engine stopped ok");
+        }
             
         }
         
@@ -789,6 +888,7 @@ public class Board {
         score_mate=0;
         score_cp=0;
         score_verbal="";
+        score_numerical=0;
         engine_running=false;
         
         flip=false;
@@ -825,12 +925,18 @@ public class Board {
             }
         });
         
-        
+        Button reset_button=new Button();
+        reset_button.setText("Reset");
+        reset_button.setOnAction(new EventHandler<ActionEvent>() {
+            @Override public void handle(ActionEvent e) {
+                reset();
+            }
+        });
         
         controls_box.getChildren().add(flip_button);
         controls_box.getChildren().add(set_fen_button);
         controls_box.getChildren().add(report_fen_button);
-        
+        controls_box.getChildren().add(reset_button);
         
         if(uci_engine_path!="")
         {
@@ -904,13 +1010,11 @@ public class Board {
         upper_gc = upper_canvas.getGraphicsContext2D();
         engine_gc = engine_canvas.getGraphicsContext2D();
         
-        reset();
-        
         board_color=Color.rgb(255, 220, 220);
         piece_color=Color.rgb(0, 0, 0);
         engine_color=Color.rgb(0, 0, 255);
         
-        drawBoard();
+        reset();
         
         if(uci_engine_path!="")
         {
