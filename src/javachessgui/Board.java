@@ -35,6 +35,8 @@ import javafx.application.Platform;
 
 public class Board {
     
+    public Game g=null;
+    
     ////////////////////////////////////////////////////////
     // static members
     private static String uci_engine_path;
@@ -227,7 +229,7 @@ public class Board {
         
         ////////////////////////////////////////////
         
-        piece_size=45;
+        piece_size=52;
         padding=5;
         margin=10;
         font_size=15;
@@ -274,6 +276,14 @@ public class Board {
         translit_dark.put('k','L');
        
         //System.out.println("board class init complete");
+    }
+    
+    private void reset_game()
+    {
+        if(g!=null)
+        {
+            g.reset();
+        }
     }
     
     private void update_engine()
@@ -648,6 +658,8 @@ public class Board {
         
         drawBoard();
         
+        reset_game();
+        
         return true;
     }
     
@@ -730,6 +742,8 @@ public class Board {
         }
         
         make_move(m);
+        
+        g.add_move(m);
         
         bestmove_algeb="";
         
@@ -844,6 +858,8 @@ public class Board {
         bestmove_algeb="";
         
         drawBoard();
+        
+        reset_game();
     }
     
     public void stop_engine_process()
@@ -1056,4 +1072,5 @@ public class Board {
         }
         
     }
+    
 }

@@ -25,6 +25,7 @@ public class Gui {
         
         b=new Board();
         g=new Game(s,b);
+        b.g=g;
         
         horizontal_box.getChildren().add(b.vertical_box);
         horizontal_box.getChildren().add(g.vertical_box);

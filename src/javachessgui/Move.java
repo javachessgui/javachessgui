@@ -16,6 +16,35 @@ public class Move {
         orig_piece=' ';
     }
     
+    public String ij_to_algeb(int i,int j)
+    {
+        String algeb="";
+        algeb+=(char)(i+(int)'a');
+        algeb+=(char)((7-j)+(int)'1');
+        return algeb;
+    }
+    
+    public String to_algeb()
+    {
+        String algeb="";
+        
+        algeb+=ij_to_algeb(i1,j1);
+        algeb+=ij_to_algeb(i2,j2);
+        
+        return algeb;
+    }
+    
+    public void copy(Move m)
+    {
+        
+        i1=m.i1;
+        j1=m.j1;
+        i2=m.i2;
+        j2=m.j2;
+        orig_piece=m.orig_piece;
+        
+    }
+    
     public void from_algeb(String algeb)
     {
         
