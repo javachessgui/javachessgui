@@ -6,7 +6,7 @@ import javafx.stage.*;
 
 public class Javachessgui extends Application {
     
-    public Board b;
+    public Gui gui;
 
     @Override
     public void start(Stage primaryStage) {
@@ -17,9 +17,9 @@ public class Javachessgui extends Application {
 
         Group root = new Group();
 
-        b = new Board();
+        gui = new Gui(primaryStage);
 
-        root.getChildren().add(b.vertical_box);
+        root.getChildren().add(gui.horizontal_box);
 
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
@@ -30,7 +30,7 @@ public class Javachessgui extends Application {
     @Override
     public void stop() {
 
-        b.stop_engine_process();
+        gui.shutdown();
         
         System.out.println("application stopped");
     }
