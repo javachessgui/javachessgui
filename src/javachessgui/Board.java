@@ -321,9 +321,9 @@ public class Board {
             int shift=(int)((piece_size)/2);
 
             int from_x=gc_x(bestmove.i1)+shift;
-            int from_y=gc_y(bestmove.j1)+shift;
+            int from_y=gc_y(bestmove.j1)+shift+padding;
             int to_x=gc_x(bestmove.i2)+shift;
-            int to_y=gc_y(bestmove.j2)+shift;
+            int to_y=gc_y(bestmove.j2)+shift+padding;
             
             Platform.runLater(new Runnable()
             {
@@ -338,6 +338,11 @@ public class Board {
                             "\nscore numerical "+score_numerical+
                             "\nbestmove "+bestmove_algeb
                     );
+                    
+                    engine_text.setStyle("-fx-text-fill: rgb("
+                        +color_r+","+color_g+","+color_b
+                        +");"
+                    );
 
                     engine_gc.clearRect(0,0,board_size,board_size);
 
@@ -350,7 +355,10 @@ public class Board {
 
                     engine_gc.setStroke(engine_color);
                     engine_gc.setLineWidth(3);
-                    engine_gc.strokeLine(from_x, from_y+padding, to_x, to_y+padding);
+                    engine_gc.strokeLine(from_x, from_y, to_x, to_y);
+                    engine_gc.setFill(score_color);
+                    
+                    engine_gc.fillOval(to_x-padding, to_y-padding, 2*padding, 2*padding);
                }
             });
             
