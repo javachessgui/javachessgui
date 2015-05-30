@@ -24,14 +24,18 @@ public class Game {
         private TextArea game_text = new TextArea ();
         
         final private int max_moves=5000;
+        final private int max_positions=max_moves+1;
         
         private Move[] moves=new Move[max_moves];
+        private String[] positions=new String[max_positions];
         
         private int move_ptr=0;
+        private int position_ptr=0;
         
         public void reset()
         {
             move_ptr=0;
+            position_ptr=0;
             
             update_game();
         }
@@ -50,6 +54,41 @@ public class Game {
             }
             
             update_game();
+        }
+        
+        public String delete_move()
+        {
+            if(position_ptr==0)
+            {
+                // nothing to delete
+                return(positions[0]);
+            }
+            else
+            {
+                if(move_ptr>0)
+                {
+                    move_ptr--;
+                }
+                position_ptr--;
+                if(position_ptr<=0)
+                {
+                    position_ptr=1;
+                }
+                update_game();
+                return(positions[position_ptr-1]);
+            }
+        }
+        
+        public void add_position(String fen)
+        {
+            if(position_ptr>=max_positions)
+            {
+                
+            }
+            else
+            {
+                positions[position_ptr++]=fen;
+            }
         }
         
         private void update_game()

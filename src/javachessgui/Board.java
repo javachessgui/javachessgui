@@ -278,11 +278,17 @@ public class Board {
         //System.out.println("board class init complete");
     }
     
+    public void record_position()
+    {
+        g.add_position(report_fen());
+    }
+    
     private void reset_game()
     {
         if(g!=null)
         {
             g.reset();
+            record_position();
         }
     }
     
@@ -581,6 +587,11 @@ public class Board {
     
     private Boolean set_from_fen(String fen)
     {
+        return set_from_fen_inner(fen,true);
+    }
+    
+    private Boolean set_from_fen_inner(String fen,Boolean do_reset_game)
+    {
         
         rep="";
         
@@ -658,7 +669,10 @@ public class Board {
         
         drawBoard();
         
-        reset_game();
+        if(do_reset_game)
+        {
+            reset_game();
+        }
         
         return true;
     }
@@ -741,9 +755,13 @@ public class Board {
             stop_engine();
         }
         
-        make_move(m);
-        
-        g.add_move(m);
+        if(m!=null)
+        {
+            make_move(m);
+
+            g.add_move(m);
+            record_position();
+        }
         
         bestmove_algeb="";
         
@@ -957,10 +975,20 @@ public class Board {
             }
         });
         
+        Button delete_button=new Button();
+        delete_button.setText("Delete");
+        delete_button.setOnAction(new EventHandler<ActionEvent>() {
+            @Override public void handle(ActionEvent e) {
+                set_from_fen_inner(g.delete_move(),false);
+                make_move_show(null);
+            }
+        });
+        
         controls_box.getChildren().add(flip_button);
         controls_box.getChildren().add(set_fen_button);
         controls_box.getChildren().add(report_fen_button);
         controls_box.getChildren().add(reset_button);
+        controls_box.getChildren().add(delete_button);
         
         if(uci_engine_path!="")
         {
