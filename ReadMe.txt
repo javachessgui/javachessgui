@@ -6,9 +6,9 @@ Setup:
 
 engine=[engine path]
 
-( if you run the jar in the dist folder, place the config.txt the 'dist' folder )
+( if you run the jar in the dist folder, place the config.txt file the 'dist' folder )
 
-- if you dont want to use an engine clear this line from config.txt because a wrong may cause the program to crash
+- if you don't want to use an engine clear this line from config.txt because a wrong may cause the program to crash
 
 Usage:
 
