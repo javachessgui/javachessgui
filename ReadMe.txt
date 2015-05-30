@@ -2,7 +2,7 @@ Chess GUI in java
 
 Setup:
 
-- if you want to use a uci engine, there should be a config.txt file in the working directory of the program containing the line ( the 'dist' folder in the repository )
+- if you want to use a uci engine, there should be a config.txt file in the working directory of the program containing the line ( if you run the jar in the dist folder, place the config.txt the 'dist' folder )
 
 engine=[engine path]
 
