@@ -746,20 +746,20 @@ public class Board {
         turn=-turn;
         
         // promotion
-        if( ((orig_piece=='P')&&(m.j2==0)) || ((orig_piece=='p')&&(m.j2==7)) )
+        if( ((m.orig_piece=='P')&&(m.j2==0)) || ((m.orig_piece=='p')&&(m.j2==7)) )
         {
             if(m.prom_piece!=' ')
             {
                 if((m.prom_piece>='a')&&(m.prom_piece<='z'))
                 {
-                    if(orig_piece=='P')
+                    if(m.orig_piece=='P')
                     {
                         m.prom_piece+='A'-'a';
                     }
                 }
                 else
                 {
-                    if(orig_piece=='p')
+                    if(m.orig_piece=='p')
                     {
                         m.prom_piece+='a'-'A';
                     }
