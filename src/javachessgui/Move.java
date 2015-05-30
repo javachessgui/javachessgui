@@ -6,6 +6,7 @@ public class Move {
     public int i2,j2;
     
     char orig_piece;
+    char prom_piece;
     
     public Move()
     {
@@ -14,6 +15,7 @@ public class Move {
         i2=0;
         j2=0;
         orig_piece=' ';
+        prom_piece=' ';
     }
     
     public String ij_to_algeb(int i,int j)
@@ -42,6 +44,7 @@ public class Move {
         i2=m.i2;
         j2=m.j2;
         orig_piece=m.orig_piece;
+        prom_piece=m.prom_piece;
         
     }
     
@@ -65,6 +68,13 @@ public class Move {
         
         i2=algeb.charAt(2)-'a';
         j2='8'-algeb.charAt(3);
+        
+        prom_piece=' ';
+        
+        if(algeb.length()>=5)
+        {
+            prom_piece=algeb.charAt(4);
+        }
         
     }
 }

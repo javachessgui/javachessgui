@@ -33,6 +33,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import javafx.application.Platform;
 
+import javax.swing.JOptionPane; 
+
 public class Board {
     
     public Game g=null;
@@ -742,6 +744,59 @@ public class Board {
         board[m.i1][m.j1]=' ';
         board[m.i2][m.j2]=m.orig_piece;
         turn=-turn;
+        
+        // promotion
+        if( ((orig_piece=='P')&&(m.j2==0)) || ((orig_piece=='p')&&(m.j2==7)) )
+        {
+            if(m.prom_piece!=' ')
+            {
+                if((m.prom_piece>='a')&&(m.prom_piece<='z'))
+                {
+                    if(orig_piece=='P')
+                    {
+                        m.prom_piece+='A'-'a';
+                    }
+                }
+                else
+                {
+                    if(orig_piece=='p')
+                    {
+                        m.prom_piece+='a'-'A';
+                    }
+                }
+            }
+            else
+            {
+                Object[] options = {"Queen",
+                    "Rook",
+                    "Bishop",
+                    "Knight"
+                };
+                
+                int n=0;
+                n = JOptionPane.showOptionDialog(null,
+                    "Select:",
+                    "Promote piece",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    options,
+                    options[0]);
+                
+                switch(n)
+                {
+                    case 0:m.prom_piece=m.orig_piece=='P'?'Q':'q';break;
+                    case 1:m.prom_piece=m.orig_piece=='P'?'R':'r';break;
+                    case 2:m.prom_piece=m.orig_piece=='P'?'B':'b';break;
+                    case 3:m.prom_piece=m.orig_piece=='P'?'N':'n';break;
+                    default:m.prom_piece=' ';
+                }
+                
+            }
+                        
+            board[m.i2][m.j2]=m.prom_piece;
+            
+        }
     }
     
     private void make_move_show(Move m)
@@ -806,6 +861,7 @@ public class Board {
                         makemove.j1=drag_from_j;
                         makemove.i2=drag_to_i;
                         makemove.j2=drag_to_j;
+                        makemove.prom_piece=' ';
                         
                         make_move_show(makemove);
 
