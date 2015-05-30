@@ -623,11 +623,24 @@ public class Board {
     
     private void make_move_show(Move m)
     {
+        
+        Boolean restart=false;
+        if(engine_running)
+        {
+            restart=true;
+            stop_engine();
+        }
+        
         make_move(m);
         
         engine_gc.clearRect(0,0,board_size,board_size);
         
         drawBoard();
+        
+        if(restart)
+        {
+            go_infinite();
+        }
     }
     
     private EventHandler<MouseEvent> mouseHandler = new EventHandler<MouseEvent>() {
@@ -755,7 +768,7 @@ public class Board {
         
         while(engine_running){
             try {
-                        Thread.sleep(500);
+                        Thread.sleep(100);
                         } catch(InterruptedException ex) {
                         Thread.currentThread().interrupt();
                         }
@@ -856,20 +869,9 @@ public class Board {
                     if((bestmove_algeb!="")&&(bestmove_algeb!=null))
                     {
                         
-                        Boolean restart=false;
-                        if(engine_running)
-                        {
-                            restart=true;
-                            stop_engine();
-                        }
-                        
                         bestmove.from_algeb(bestmove_algeb);
                         make_move_show(bestmove);
                         
-                        if(restart)
-                        {
-                            go_infinite();
-                        }
                     }
                 }
             });
