@@ -1590,7 +1590,7 @@ public class Board {
         
     }
     
-    private void list_pseudo_legal_moves()
+    private void list_legal_moves()
     {
         init_move_generator();
         
@@ -1606,7 +1606,12 @@ public class Board {
             
             dummy.make_move(current_move);
             
-            System.out.print(algeb+" "+san+" ");
+            if(!dummy.is_in_check(turn))
+            {
+            
+                System.out.print(algeb+" "+san+" ");
+            
+            }
             
         }
         
@@ -1700,10 +1705,25 @@ public class Board {
                 }
                 else
                 {
-                    if(to_piece_test==from_piece)
+                    if((to_piece_test==from_piece)&&((md.to_i!=m.i1)||(md.to_j!=m.j1)))
                     {
                         
-                        if((md.to_i!=m.i1)||(md.to_j!=m.j1))
+                        Move test_move=new Move();
+                        
+                        test_move.orig_piece=from_piece;
+                        test_move.prom_piece=' ';
+                        test_move.i1=md.to_i;
+                        test_move.j1=md.to_j;
+                        test_move.i2=m.i2;
+                        test_move.j2=m.j2;
+                        
+                        Board dummy=new Board(false);
+            
+                        dummy.set_from_fen(report_fen());
+            
+                        dummy.make_move(test_move);
+                        
+                        if(!dummy.is_in_check(turn))                        
                         {
                             
                             ambiguity=true;
@@ -1852,7 +1872,7 @@ public class Board {
             go_infinite();
         }
         
-        list_pseudo_legal_moves();
+        list_legal_moves();
         
     }
     
