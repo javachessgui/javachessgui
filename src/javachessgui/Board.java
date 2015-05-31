@@ -149,6 +149,58 @@ public class Board {
     private int score_numerical;
     private Boolean engine_running;
     ////////////////////////////////////////////////////////
+    
+    
+    ////////////////////////////////////////////////////////
+    // move generation
+    final static int move_table_size=20000;
+    static MoveDescriptor move_table[]=new MoveDescriptor[move_table_size];
+    static int move_table_ptr[][][]=new int[8][8][32];
+    
+    final static int STRAIGHT=16;
+    final static int DIAGONAL=8;
+    final static int SLIDING=STRAIGHT|DIAGONAL;
+    final static int SINGLE=4;
+    
+    final static int QUEEN=STRAIGHT|DIAGONAL;
+    final static int ROOK=STRAIGHT;
+    final static int BISHOP=DIAGONAL;
+    final static int KNIGHT=SINGLE;
+    final static int KING=SINGLE|STRAIGHT|DIAGONAL;
+    final static int PAWN=2;
+    
+    final static int PIECE_TYPE=30;
+    final static int PIECE_COLOR=1;
+    
+    final static int WHITE=1;
+    final static int BLACK=0;
+    ////////////////////////////////////////////////////////
+    
+    private int piece_code_of(int piece)
+    {
+        
+        if(piece=='p'){return BLACK|PAWN;}
+        if(piece=='P'){return WHITE|PAWN;}
+        if(piece=='n'){return BLACK|KNIGHT;}
+        if(piece=='N'){return WHITE|KNIGHT;}
+        if(piece=='b'){return BLACK|BISHOP;}
+        if(piece=='B'){return WHITE|BISHOP;}
+        if(piece=='r'){return BLACK|ROOK;}
+        if(piece=='R'){return WHITE|ROOK;}
+        if(piece=='Q'){return BLACK|QUEEN;}
+        if(piece=='q'){return WHITE|QUEEN;}
+        
+        return 0;
+    }
+    
+    private static Boolean square_ok(int i,int j)
+    {
+        if((i>=0)&&(i<=7)&&(j>=0)&&(j<=7))
+        {
+            return true;
+        }
+        return false;
+    }
 
     public static void init_class()
     {
@@ -276,8 +328,124 @@ public class Board {
         translit_dark.put('r','T');
         translit_dark.put('q','W');
         translit_dark.put('k','L');
+        
+        // init move descriptors
+        
+        int move_table_curr_ptr=0;
+        
+        for(int i=0;i<8;i++)
+        {
+            for(int j=0;j<8;j++)
+            {
+                for(int p=0;p<32;p++)
+                {
+                    int piece_type=p&PIECE_TYPE;
+                    
+                    System.out.println("i "+i+" j "+j+" p "+p+" curr "+move_table_curr_ptr);
+                    
+                    if((piece_type==QUEEN)||(piece_type==ROOK)||(piece_type==BISHOP)||(piece_type==KNIGHT)||(piece_type==KING))
+                    {
+                        
+                        Boolean is_single=(piece_type&SINGLE)!=0;
+                        
+                        move_table_ptr[i][j][p]=move_table_curr_ptr;
+                        
+                        for(int vi=-2;vi<=2;vi++)
+                        {
+                            for(int vj=-2;vj<=2;vj++)
+                            {
+                                if(
+                                        
+                                        ((Math.abs(vi)+Math.abs(vj))>0)
+                                        
+                                        &&
+                                        
+                                        (
+                                        
+                                            (
+                                                ((vi*vj)!=0)
+                                                &&
+                                                ((Math.abs(vi)!=2)&&(Math.abs(vj)!=2))
+                                                &&
+                                                ((piece_type&DIAGONAL)!=0)
+                                            )
+                                        
+                                            ||
+                                        
+                                            (
+                                                ((vi*vj)==0)
+                                                &&
+                                                ((Math.abs(vi)!=2)&&(Math.abs(vj)!=2))
+                                                &&
+                                                ((piece_type&STRAIGHT)!=0)
+                                            )
+                                        
+                                            ||
+                                        
+                                            (
+                                                (Math.abs(vi*vj)==2)
+                                                &&
+                                                (piece_type==KNIGHT)
+                                            )
+                                            
+                                        )
+                                        
+                                )
+                                {
+                                    
+                                    int start_vector=move_table_curr_ptr;
+                                    
+                                    int ci=i;
+                                    int cj=j;
+                                    Boolean square_ok;
+                                    do
+                                    {
+                                        
+                                        ci+=vi;
+                                        cj+=vj;
+                                        square_ok=square_ok(ci,cj);
+                                        if(square_ok)
+                                        {
+                                            MoveDescriptor md=new MoveDescriptor();
+                                            md.to_i=ci;
+                                            md.to_j=cj;
+                                            
+                                            move_table[move_table_curr_ptr++]=md;
+                                        }
+                                             
+                                    }while(square_ok&&(!is_single));
+                                    
+                                    for(int ptr=start_vector;ptr<move_table_curr_ptr;ptr++)
+                                    {
+                                        move_table[ptr].next_vector=move_table_curr_ptr;
+                                    }
+                                    
+                                    
+                                }
+                            }
+                        }
+                        
+                        // piece finished
+                        
+                        move_table[move_table_curr_ptr]=new MoveDescriptor();
+                        move_table[move_table_curr_ptr++].end_piece=true;
+                        
+                    }
+                    
+                    
+                    if(piece_type==PAWN)
+                    {
+                        move_table[move_table_curr_ptr]=new MoveDescriptor();
+                        move_table[move_table_curr_ptr++].end_piece=true;
+                    }
+                    
+                }
+            }
+        }
        
         //System.out.println("board class init complete");
+        
+        
     }
     
     public void record_position()
