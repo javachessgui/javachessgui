@@ -340,13 +340,18 @@ public class Board {
                 for(int p=0;p<32;p++)
                 {
                     int piece_type=p&PIECE_TYPE;
+                    int piece_color=p&PIECE_COLOR;
                     
                     System.out.println("i "+i+" j "+j+" p "+p+" curr "+move_table_curr_ptr);
                     
-                    if((piece_type==QUEEN)||(piece_type==ROOK)||(piece_type==BISHOP)||(piece_type==KNIGHT)||(piece_type==KING))
+                    if((piece_type==QUEEN)||(piece_type==ROOK)||(piece_type==BISHOP)||(piece_type==KNIGHT)||(piece_type==KING)||(piece_type==PAWN))
                     {
                         
-                        Boolean is_single=(piece_type&SINGLE)!=0;
+                        Boolean is_single=(
+                                ((piece_type&SINGLE)!=0)
+                                ||
+                                (piece_type==PAWN)
+                        );
                         
                         move_table_ptr[i][j][p]=move_table_curr_ptr;
                         
@@ -386,6 +391,50 @@ public class Board {
                                                 (Math.abs(vi*vj)==2)
                                                 &&
                                                 (piece_type==KNIGHT)
+                                            )
+                                        
+                                            ||
+                                        
+                                            (
+                                                (piece_type==PAWN)
+                                                &&
+                                                (Math.abs(vi)<2)
+                                                &&
+                                                (Math.abs(vj)>0)
+                                                &&
+                                                (
+                                                    (
+                                                        (piece_color==WHITE)
+                                                        &&
+                                                        (vj<0)
+                                                        &&
+                                                        (
+                                                            (Math.abs(vj)==1)
+                                                            ||
+                                                            (
+                                                                (j==6)
+                                                                &&
+                                                                (vi==0)
+                                                            )
+                                                        )
+                                                    )
+                                                    ||
+                                                    (
+                                                        (piece_color==BLACK)
+                                                        &&
+                                                        (vj>0)
+                                                        &&
+                                                        (
+                                                            (Math.abs(vj)==1)
+                                                            ||
+                                                            (
+                                                                (j==1)
+                                                                &&
+                                                                (vi==0)
+                                                            )
+                                                        )
+                                                    )
+                                                )
                                             )
                                             
                                         )
@@ -432,12 +481,6 @@ public class Board {
                         
                     }
                     
-                    
-                    if(piece_type==PAWN)
-                    {
-                        move_table[move_table_curr_ptr]=new MoveDescriptor();
-                        move_table[move_table_curr_ptr++].end_piece=true;
-                    }
                     
                 }
             }
