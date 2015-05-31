@@ -1617,14 +1617,14 @@ public class Board {
         
         Boolean is_legal=false;
         
-        String algeb=m.to_algeb();
+        String algeb=m.to_algeb_inner(false);
         
         init_move_generator();
         
         while((!is_legal)&&(next_pseudo_legal_move()))
         {
             
-            String test_algeb=current_move.to_algeb();
+            String test_algeb=current_move.to_algeb_inner(false);
             
             if(test_algeb.equals(algeb))
             {

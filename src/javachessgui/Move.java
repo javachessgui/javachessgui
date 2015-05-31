@@ -28,12 +28,17 @@ public class Move {
     
     public String to_algeb()
     {
+        return to_algeb_inner(true);
+    }
+    
+    public String to_algeb_inner(Boolean full)
+    {
         String algeb="";
         
         algeb+=ij_to_algeb(i1,j1);
         algeb+=ij_to_algeb(i2,j2);
         
-        if(prom_piece!=' ')
+        if((prom_piece!=' ')&&(full))
         {
             algeb+=prom_piece;
         }
