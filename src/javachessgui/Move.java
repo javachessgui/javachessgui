@@ -18,7 +18,7 @@ public class Move {
         prom_piece=' ';
     }
     
-    public String ij_to_algeb(int i,int j)
+    public static String ij_to_algeb(int i,int j)
     {
         String algeb="";
         algeb+=(char)(i+(int)'a');

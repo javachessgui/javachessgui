@@ -560,8 +560,8 @@ public class Board {
                 " t: "+(turn==1?"w":"b")+
                 ", c: "+castling_rights+
                 ", ep: "+ep_square_algeb+
-                ", hm: "+String.valueOf(halfmove_clock)+
-                ", fm: "+String.valueOf(fullmove_number)+
+                ", hm: "+halfmove_clock+
+                ", fm: "+fullmove_number+
                 ", flp: "+(flip?"y":"n")
                 ,
                 0,board_size+padding+font_size);
@@ -669,6 +669,20 @@ public class Board {
             ep_square_algeb=ep_square_algeb_part;
         }
         
+        if(fen_parts.length>=5)
+        {
+            String halfmove_clock_part=fen_parts[4];
+
+            halfmove_clock=Integer.parseInt(halfmove_clock_part);
+        }
+        
+        if(fen_parts.length>=6)
+        {
+            String fullmove_number_part=fen_parts[5];
+
+            fullmove_number=Integer.parseInt(fullmove_number_part);
+        }
+        
         drawBoard();
         
         if(do_reset_game)
@@ -740,10 +754,20 @@ public class Board {
     
     private void make_move(Move m)
     {
+        
+        // make move
         m.orig_piece=board[m.i1][m.j1];
         board[m.i1][m.j1]=' ';
+        
+        char dest_piece=board[m.i2][m.j2];
+        
         board[m.i2][m.j2]=m.orig_piece;
+        
+        // turn
         turn=-turn;
+        
+        // clear ep
+        ep_square_algeb="-";
         
         // promotion
         if( ((m.orig_piece=='P')&&(m.j2==0)) || ((m.orig_piece=='p')&&(m.j2==7)) )
@@ -797,6 +821,109 @@ public class Board {
             board[m.i2][m.j2]=m.prom_piece;
             
         }
+        
+        // halfmove clock
+        Boolean is_capture=(dest_piece!=' ');
+        
+        Boolean is_pawn_move=((m.orig_piece=='p')||(m.orig_piece=='P'));
+        
+        if(is_capture||is_pawn_move)
+        {
+            halfmove_clock=0;
+        }
+        else
+        {
+            halfmove_clock++;
+        }
+        
+        // fullmove number
+        if(turn==TURN_WHITE)
+        {
+            fullmove_number++;
+        }
+        
+        // pawn push by two
+        if(
+                ((m.orig_piece=='P')&&(m.j1==6)&&(m.j2==4))
+                ||
+                ((m.orig_piece=='p')&&(m.j1==1)&&(m.j2==3))
+        )
+        {
+            ep_square_algeb=Move.ij_to_algeb(m.i1,m.j1+(m.j2-m.j1)/2);
+        }
+        
+        // castling rights
+        
+        if(m.orig_piece=='k')
+        {
+            castling_rights=castling_rights.replace("k","");
+            castling_rights=castling_rights.replace("q","");
+            
+        }
+        
+        if(m.orig_piece=='K')
+        {
+            castling_rights=castling_rights.replace("K","");
+            castling_rights=castling_rights.replace("Q","");
+            
+        }
+        
+        if(board[0][0]==' ')
+        {
+            castling_rights=castling_rights.replace("q","");
+        }
+        
+        if(board[0][7]==' ')
+        {
+            castling_rights=castling_rights.replace("Q","");
+        }
+        
+        if(board[7][0]==' ')
+        {
+            castling_rights=castling_rights.replace("k","");
+        }
+        
+        if(board[7][7]==' ')
+        {
+            castling_rights=castling_rights.replace("K","");
+        }
+        
+        if(castling_rights.length()<=0)
+        {
+            castling_rights="-";
+        }
+        
+        // castling
+        if((m.j1==0)&&(m.i1==4)&&(m.j2==0)&&(m.i2==6))
+        {
+            board[7][0]=' ';
+            board[5][0]='r';
+        }
+        
+        if((m.j1==0)&&(m.i1==4)&&(m.j2==0)&&(m.i2==2))
+        {
+            board[0][0]=' ';
+            board[3][0]='r';
+        }
+        
+        if((m.j1==7)&&(m.i1==4)&&(m.j2==7)&&(m.i2==6))
+        {
+            board[7][7]=' ';
+            board[5][7]='R';
+        }
+        
+        if((m.j1==7)&&(m.i1==4)&&(m.j2==7)&&(m.i2==2))
+        {
+            board[0][7]=' ';
+            board[3][7]='R';
+        }
+        
+        // ep capture
+        if((m.orig_piece=='p')||(m.orig_piece=='P')&&(dest_piece==' ')&&(m.i1!=m.i2))
+        {
+            board[m.i2][m.j1]=' ';
+        }
+        
     }
     
     private void make_move_show(Move m)
@@ -828,6 +955,15 @@ public class Board {
         }
     }
     
+    private int turn_of_piece(char piece)
+    {
+        if((piece>='a')&&(piece<='z'))
+        {
+            return TURN_BLACK;
+        }
+        return TURN_WHITE;
+    }
+    
     private EventHandler<MouseEvent> mouseHandler = new EventHandler<MouseEvent>() {
  
         @Override
@@ -851,7 +987,24 @@ public class Board {
                     drag_to_i=gc_i(x);
                     drag_to_j=gc_i(y);
                     
-                    if((drag_to_i>=0)&&(drag_to_j>=0)&&(drag_to_i<=7)&&(drag_to_j<=7))
+                    // same square
+                    if((drag_to_i==drag_from_i)&&(drag_to_j==drag_from_j))
+                    {
+                        drawBoard();
+                        return;
+                    }
+                    
+                    // wrong turn
+                    if(turn_of_piece(orig_piece)!=turn)
+                    {
+                        drawBoard();
+                        return;
+                    }
+                    
+                    if(
+                            (drag_to_i>=0)&&(drag_to_j>=0)&&(drag_to_i<=7)&&(drag_to_j<=7)
+                            
+                    )
                     {
                     
                         drag_to_x=gc_x(drag_to_i);
@@ -868,7 +1021,8 @@ public class Board {
                     }
                     else
                     {
-                        //board[drag_from_i][drag_from_j]=orig_piece;
+                        drawBoard();
+                        return;
                     }
                 
                 }
