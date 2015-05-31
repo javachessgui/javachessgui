@@ -1598,13 +1598,15 @@ public class Board {
         {
             String algeb=current_move.to_algeb();
             
+            String san=to_san(current_move);
+            
             Board dummy=new Board(false);
             
             dummy.set_from_fen(report_fen());
             
             dummy.make_move(current_move);
             
-            System.out.print(algeb+(dummy.is_in_check(turn)?"+":"")+" ");
+            System.out.print(algeb+" "+san+" ");
             
         }
         
@@ -1643,6 +1645,134 @@ public class Board {
         }
         
         return is_legal;
+    }
+    
+    private String to_san_raw(Move m)
+    {
+        
+        char from_piece=board[m.i1][m.j1];
+        int from_piece_code=code_of(from_piece);
+        int from_piece_type=from_piece_code&PIECE_TYPE;
+        
+        String algeb=m.to_algeb();
+        char to_piece=board[m.i2][m.j2];
+        String target_algeb=""+algeb.charAt(2)+algeb.charAt(3);
+        
+        if(from_piece_type==PAWN)
+        {
+            if(m.i1==m.i2)
+            {
+                // pawn push
+                return target_algeb;
+            }
+            else
+            {
+                return algeb.charAt(0)+"x"+target_algeb;
+            }
+        }
+        else
+        {
+            
+            int test_ptr=move_table_ptr[m.i2][m.j2][from_piece_code];
+            
+            MoveDescriptor md;
+            
+            Boolean ambiguity=false;
+        
+            Boolean same_rank=false;
+            Boolean same_file=false;
+            
+            int from_rank_list[]=new int[50];
+            int from_rank_cnt=0;
+            int from_file_list[]=new int[50];
+            int from_file_cnt=0;
+            
+            do
+            {
+                
+                md=move_table[test_ptr];
+                
+                char to_piece_test=board[md.to_i][md.to_j];
+                
+                if(to_piece_test==' ')
+                {
+                    test_ptr++;
+                }
+                else
+                {
+                    if(to_piece_test==from_piece)
+                    {
+                        
+                        if((md.to_i!=m.i1)||(md.to_j!=m.j1))
+                        {
+                            
+                            ambiguity=true;
+                            
+                            from_rank_list[from_rank_cnt++]=md.to_j;
+                            from_file_list[from_file_cnt++]=md.to_i;
+                            
+                            for(int r=0;r<from_rank_cnt;r++)
+                            {
+                                if(m.j1==from_rank_list[r])
+                                {
+                                    same_rank=true;
+                                }
+                            }
+
+                            for(int f=0;f<from_file_cnt;f++)
+                            {
+                                if(m.i1==from_file_list[f])
+                                {
+                                    same_file=true;
+                                }
+                            }
+
+                        
+                        }
+                        
+                    }
+                    
+                    if((from_piece_type&SLIDING)!=0)
+                    {
+                        test_ptr=md.next_vector;
+                    }
+                    else
+                    {
+                        test_ptr++;
+                    }
+                    
+                }
+                
+            }while(!move_table[test_ptr].end_piece);
+            
+            String san=""+Character.toUpperCase(from_piece);
+            
+            if(ambiguity&&(!same_file)&&(!same_rank))
+            {
+                san+=algeb.charAt(0);
+            }
+            else
+            {
+                if(same_rank){san+=algeb.charAt(0);}
+                if(same_file){san+=algeb.charAt(1);}
+            }
+            
+            if(to_piece!=' ')
+            {
+                san+="x";
+            }
+            
+            san+=target_algeb;
+            
+            return san;
+            
+        }
+        
+    }
+    
+    private String to_san(Move m)
+    {
+        return to_san_raw(m);
     }
     
     private void make_move_show(Move m)
