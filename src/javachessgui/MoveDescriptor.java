@@ -8,6 +8,8 @@ public class MoveDescriptor {
     
     public Boolean end_piece;
     public Boolean castling;
+    public Boolean promotion;
+    char prom_piece;
     
     public int next_vector;
     
@@ -15,5 +17,7 @@ public class MoveDescriptor {
     {
         end_piece=false;
         castling=false;
+        promotion=false;
+        prom_piece=' ';
     }
 }

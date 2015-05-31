@@ -178,6 +178,8 @@ public class Board {
     final static int KNIGHT=SINGLE;
     final static int PAWN=SINGLE|IS_PAWN;
     
+    final static int all_pieces[]={KING,QUEEN,ROOK,BISHOP,KNIGHT,PAWN};
+    final static char promotion_pieces[]={'q','r','b','n'};
     
     final static int PIECE_TYPE=62;
     final static int PIECE_COLOR=1;
@@ -270,7 +272,7 @@ public class Board {
                 current_move.j1=curr_j;
                 current_move.i2=to_i;
                 current_move.j2=to_j;
-                current_move.prom_piece=' ';
+                current_move.prom_piece=md.prom_piece;
                 
                 if(md.castling)
                 {
@@ -285,7 +287,11 @@ public class Board {
                             &&
                             (board[5][0]==' ')
                             &&    
-                            (castling_rights.indexOf('k')>=0)    
+                            (castling_rights.indexOf('k')>=0)
+                            &&
+                            (!is_square_in_check(6,0,BLACK))
+                            &&
+                            (!is_square_in_check(5,0,BLACK))
                         )
                         {
                             return true;
@@ -299,8 +305,14 @@ public class Board {
                             (board[3][0]==' ')
                             &&
                             (board[2][0]==' ')
+                            &&
+                            (board[1][0]==' ')
                             &&    
                             (castling_rights.indexOf('q')>=0)    
+                            &&
+                            (!is_square_in_check(3,0,BLACK))
+                            &&
+                            (!is_square_in_check(2,0,BLACK))
                         )
                         {
                             return true;
@@ -315,7 +327,11 @@ public class Board {
                             &&
                             (board[5][7]==' ')
                             &&    
-                            (castling_rights.indexOf('K')>=0)    
+                            (castling_rights.indexOf('K')>=0)
+                            &&
+                            (!is_square_in_check(6,7,WHITE))
+                            &&
+                            (!is_square_in_check(5,7,WHITE))
                         )
                         {
                             return true;
@@ -329,8 +345,14 @@ public class Board {
                             (board[3][7]==' ')
                             &&
                             (board[2][7]==' ')
+                            &&
+                            (board[1][7]==' ')
                             &&    
                             (castling_rights.indexOf('Q')>=0)    
+                            &&
+                            (!is_square_in_check(3,7,WHITE))
+                            &&
+                            (!is_square_in_check(2,7,WHITE))
                         )
                         {
                             return true;
@@ -377,6 +399,17 @@ public class Board {
                     
                     if(current_move_gen_piece_type==PAWN)
                     {
+                        
+                        if(curr_i!=to_i)
+                        {
+                            // sidewise move may be ep capture
+                            String test_algeb=Move.ij_to_algeb(to_i, to_j);
+                            if(test_algeb.equals(ep_square_algeb))
+                            {
+                                is_capture=true;
+                            }
+                        }
+                        
                         if(is_capture)
                         {
                             // pawn captures only to the sides
@@ -735,12 +768,33 @@ public class Board {
                                         
                                         if(square_ok)
                                         {
-                                            MoveDescriptor md=new MoveDescriptor();
-                                            md.to_i=ci;
-                                            md.to_j=cj;
-                                            md.castling=is_castling;
-                                            
-                                            move_table[move_table_curr_ptr++]=md;
+                                            if(
+                                                    ((p==(WHITE|PAWN))&&(cj==0))
+                                                    ||
+                                                    ((p==(BLACK|PAWN))&&(cj==7))
+                                            )
+                                            {
+                                                for(int prom=0;prom<promotion_pieces.length;prom++)
+                                                {
+                                                    MoveDescriptor md=new MoveDescriptor();
+                                                    md.to_i=ci;
+                                                    md.to_j=cj;
+                                                    md.castling=false;
+                                                    md.promotion=true;
+                                                    md.prom_piece=promotion_pieces[prom];
+
+                                                    move_table[move_table_curr_ptr++]=md;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                MoveDescriptor md=new MoveDescriptor();
+                                                md.to_i=ci;
+                                                md.to_j=cj;
+                                                md.castling=is_castling;
+
+                                                move_table[move_table_curr_ptr++]=md;
+                                            }
                                         }
                                              
                                     }while(square_ok&&(!is_single));
@@ -1054,7 +1108,8 @@ public class Board {
                 ", ep: "+ep_square_algeb+
                 ", hm: "+halfmove_clock+
                 ", fm: "+fullmove_number+
-                ", flp: "+(flip?"y":"n")
+                ", flp: "+(flip?"y":"n")+
+                (is_in_check(turn)?", +":"")
                 ,
                 0,board_size+padding+font_size);
         
@@ -1423,6 +1478,118 @@ public class Board {
         
     }
     
+    private char piece_of_code(int code)
+    {
+        if(code==(WHITE|KING)){return 'K';}
+        if(code==(BLACK|KING)){return 'k';}
+        if(code==(WHITE|QUEEN)){return 'Q';}
+        if(code==(BLACK|QUEEN)){return 'q';}
+        if(code==(WHITE|ROOK)){return 'R';}
+        if(code==(BLACK|ROOK)){return 'r';}
+        if(code==(WHITE|BISHOP)){return 'B';}
+        if(code==(BLACK|BISHOP)){return 'b';}
+        if(code==(WHITE|KNIGHT)){return 'N';}
+        if(code==(BLACK|KNIGHT)){return 'n';}
+        if(code==(WHITE|PAWN)){return 'P';}
+        if(code==(BLACK|PAWN)){return 'p';}
+        return ' ';
+    }
+    
+    private Boolean is_square_in_check(int i,int j,int color)
+    {
+        
+        int attacker_color=color==WHITE?BLACK:WHITE;
+        
+        Boolean is_check=false;
+        
+        for(int p=0;p<all_pieces.length;p++)
+        {
+            
+            int check_ptr=move_table_ptr[i][j][all_pieces[p]|color];
+            char test_piece=piece_of_code(all_pieces[p]|attacker_color);
+            
+            MoveDescriptor md;
+            do
+            {
+                md=move_table[check_ptr];
+                
+                if(md.castling)
+                {
+                    check_ptr++;
+                }
+                else if(!md.end_piece)
+                {
+                    
+                    int to_i=md.to_i;
+                    int to_j=md.to_j;
+                    
+                    char to_piece=board[to_i][to_j];
+                    
+                    if(to_piece==test_piece)
+                    {
+                        is_check=true;
+                    }
+                    else
+                    {
+                        if(to_piece==' ')
+                        {
+                            check_ptr++;
+                        }
+                        else
+                        {
+                            check_ptr=md.next_vector;
+                        }
+                    }
+                    
+                }
+                
+            }while((!md.end_piece)&&(!is_check));
+            
+            
+            if(is_check)
+            {
+                break;
+            }
+            
+        }
+        
+        return is_check;
+    }
+    
+    private Boolean is_in_check(int turn)
+    {
+        
+        Boolean found=false;
+        
+        char search_king=turn==TURN_WHITE?'K':'k';
+        
+        int king_i=0;
+        int king_j=0;
+        
+        for(int i=0;i<8;i++)
+        {
+            
+            for(int j=0;j<8;j++)
+            {
+                
+                if(board[i][j]==search_king)
+                {
+                    king_i=i;
+                    king_j=j;
+                    found=true;
+                    break;
+                }
+                
+                if(found){break;}
+                
+            }
+            
+        }
+        
+        return is_square_in_check(king_i,king_j,turn==TURN_WHITE?WHITE:BLACK);
+        
+    }
+    
     private void list_pseudo_legal_moves()
     {
         init_move_generator();
@@ -1431,18 +1598,49 @@ public class Board {
         {
             String algeb=current_move.to_algeb();
             
-            System.out.println("algeb: "+algeb);
-            
             Board dummy=new Board(false);
             
             dummy.set_from_fen(report_fen());
             
             dummy.make_move(current_move);
             
-            System.out.println("fen after: "+dummy.report_fen());
+            System.out.println("algeb: "+algeb+(dummy.is_in_check(turn)?"+":""));
             
         }
         
+    }
+    
+    private Boolean is_move_legal(Move m)
+    {
+        
+        Boolean is_legal=false;
+        
+        String algeb=m.to_algeb();
+        
+        init_move_generator();
+        
+        while((!is_legal)&&(next_pseudo_legal_move()))
+        {
+            
+            String test_algeb=current_move.to_algeb();
+            
+            if(test_algeb.equals(algeb))
+            {
+                Board dummy=new Board(false);
+            
+                dummy.set_from_fen(report_fen());
+
+                dummy.make_move(current_move);
+                
+                if(!dummy.is_in_check(turn))
+                {
+                    is_legal=true;
+                }
+            }
+            
+        }
+        
+        return is_legal;
     }
     
     private void make_move_show(Move m)
@@ -1547,7 +1745,16 @@ public class Board {
                         makemove.j2=drag_to_j;
                         makemove.prom_piece=' ';
                         
-                        make_move_show(makemove);
+                        if(is_move_legal(makemove))
+                        {
+                            make_move_show(makemove);
+                        }
+                        else
+                        {
+                            System.out.println("Illegal move!");
+                            drawBoard();
+                            return;
+                        }
 
                     }
                     else
