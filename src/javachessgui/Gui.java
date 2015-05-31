@@ -23,7 +23,7 @@ public class Gui {
               
         s=set_s;
         
-        b=new Board();
+        b=new Board(true);
         g=new Game(s,b);
         b.g=g;
         

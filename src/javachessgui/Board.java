@@ -39,6 +39,8 @@ public class Board {
     
     public Game g=null;
     
+    private Boolean with_gui;
+    
     ////////////////////////////////////////////////////////
     // static members
     private static String uci_engine_path;
@@ -1173,11 +1175,16 @@ public class Board {
             fullmove_number=Integer.parseInt(fullmove_number_part);
         }
         
-        drawBoard();
-        
-        if(do_reset_game)
+        if(with_gui)
         {
-            reset_game();
+            
+            drawBoard();
+
+            if(do_reset_game)
+            {
+                reset_game();
+            }
+
         }
         
         return true;
@@ -1424,10 +1431,18 @@ public class Board {
         {
             String algeb=current_move.to_algeb();
             
-            System.out.print(algeb+" ");
+            System.out.println("algeb: "+algeb);
+            
+            Board dummy=new Board(false);
+            
+            dummy.set_from_fen(report_fen());
+            
+            dummy.make_move(current_move);
+            
+            System.out.println("fen after: "+dummy.report_fen());
+            
         }
         
-        System.out.println("");
     }
     
     private void make_move_show(Move m)
@@ -1582,7 +1597,16 @@ public class Board {
     
     public void reset()
     {
-        stop_engine();
+        
+        if(with_gui)
+        {
+        
+            stop_engine();
+        
+        }
+        
+        ///////////////////////////////////////////////////////
+        // board state
         
         rep="rnbqkbnrpppppppp                                PPPPPPPPRNBQKBNR";
          
@@ -1597,13 +1621,20 @@ public class Board {
         
         turn=TURN_WHITE;
         
-        is_drag_going=false;
+        ///////////////////////////////////////////////////////
         
-        bestmove_algeb="";
+        if(with_gui)
+        {
+            
+            is_drag_going=false;
         
-        drawBoard();
+            bestmove_algeb="";
         
-        reset_game();
+            drawBoard();
+
+            reset_game();
+        
+        }
     }
     
     public void stop_engine_process()
@@ -1646,184 +1677,191 @@ public class Board {
         
     }
     	
-    public Board()
+    public Board(Boolean set_with_gui)
     {
         
-        pv="";
-        bestmove_algeb="";
-        bestmove=new Move();
-        depth=0;
-        score_mate=0;
-        score_cp=0;
-        score_verbal="";
-        score_numerical=0;
-        engine_running=false;
+        with_gui=set_with_gui;
         
-        flip=false;
-        
-        canvas=new Canvas(board_size,board_size+info_bar_size);
-        upper_canvas=new Canvas(board_size,board_size);
-        engine_canvas=new Canvas(board_size,board_size);
-        
-        canvas_group.getChildren().add(canvas);
-        canvas_group.getChildren().add(engine_canvas);
-        canvas_group.getChildren().add(upper_canvas);
-        
-        Button flip_button=new Button();
-        flip_button.setText("Flip");
-        flip_button.setOnAction(new EventHandler<ActionEvent>() {
-            @Override public void handle(ActionEvent e) {
-                flip();
-            }
-        });
-        
-        Button set_fen_button=new Button();
-        set_fen_button.setText("Set Fen");
-        set_fen_button.setOnAction(new EventHandler<ActionEvent>() {
-            @Override public void handle(ActionEvent e) {
-                set_from_fen(fen_text.getText());
-            }
-        });
-        
-        Button report_fen_button=new Button();
-        report_fen_button.setText("Report Fen");
-        report_fen_button.setOnAction(new EventHandler<ActionEvent>() {
-            @Override public void handle(ActionEvent e) {
-                drawBoard();
-            }
-        });
-        
-        Button reset_button=new Button();
-        reset_button.setText("Reset");
-        reset_button.setOnAction(new EventHandler<ActionEvent>() {
-            @Override public void handle(ActionEvent e) {
-                reset();
-            }
-        });
-        
-        Button delete_button=new Button();
-        delete_button.setText("Delete");
-        delete_button.setOnAction(new EventHandler<ActionEvent>() {
-            @Override public void handle(ActionEvent e) {
-                set_from_fen_inner(g.delete_move(),false);
-                make_move_show(null);
-            }
-        });
-        
-        controls_box.getChildren().add(flip_button);
-        controls_box.getChildren().add(set_fen_button);
-        controls_box.getChildren().add(report_fen_button);
-        controls_box.getChildren().add(reset_button);
-        controls_box.getChildren().add(delete_button);
-        
-        if(uci_engine_path!="")
+        if(with_gui)
         {
+            
+            flip=false;
+            
+            pv="";
+            bestmove_algeb="";
+            bestmove=new Move();
+            depth=0;
+            score_mate=0;
+            score_cp=0;
+            score_verbal="";
+            score_numerical=0;
+            engine_running=false;
         
-            Button stop_engine_process_button=new Button();
-            stop_engine_process_button.setText("Stop Engine Process");
-            stop_engine_process_button.setOnAction(new EventHandler<ActionEvent>() {
+            canvas=new Canvas(board_size,board_size+info_bar_size);
+            upper_canvas=new Canvas(board_size,board_size);
+            engine_canvas=new Canvas(board_size,board_size);
+
+            canvas_group.getChildren().add(canvas);
+            canvas_group.getChildren().add(engine_canvas);
+            canvas_group.getChildren().add(upper_canvas);
+
+            Button flip_button=new Button();
+            flip_button.setText("Flip");
+            flip_button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                    stop_engine_process();
+                    flip();
                 }
             });
 
-            Button engine_go_button=new Button();
-            engine_go_button.setText("Go");
-            engine_go_button.setOnAction(new EventHandler<ActionEvent>() {
+            Button set_fen_button=new Button();
+            set_fen_button.setText("Set Fen");
+            set_fen_button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                    if(!engine_running)
-                    {
-                        go_infinite();
-                    }
+                    set_from_fen(fen_text.getText());
                 }
             });
 
-            Button engine_stop_button=new Button();
-            engine_stop_button.setText("Stop");
-            engine_stop_button.setOnAction(new EventHandler<ActionEvent>() {
+            Button report_fen_button=new Button();
+            report_fen_button.setText("Report Fen");
+            report_fen_button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                    stop_engine();
+                    drawBoard();
                 }
             });
-            
-            Button engine_make_button=new Button();
-            engine_make_button.setText("Make");
-            engine_make_button.setOnAction(new EventHandler<ActionEvent>() {
+
+            Button reset_button=new Button();
+            reset_button.setText("Reset");
+            reset_button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                    if((bestmove_algeb!="")&&(bestmove_algeb!=null))
-                    {
-                        
-                        bestmove.from_algeb(bestmove_algeb);
-                        make_move_show(bestmove);
-                        
+                    reset();
+                }
+            });
+
+            Button delete_button=new Button();
+            delete_button.setText("Delete");
+            delete_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    set_from_fen_inner(g.delete_move(),false);
+                    make_move_show(null);
+                }
+            });
+
+            controls_box.getChildren().add(flip_button);
+            controls_box.getChildren().add(set_fen_button);
+            controls_box.getChildren().add(report_fen_button);
+            controls_box.getChildren().add(reset_button);
+            controls_box.getChildren().add(delete_button);
+
+            if(uci_engine_path!="")
+            {
+
+                Button stop_engine_process_button=new Button();
+                stop_engine_process_button.setText("Stop Engine Process");
+                stop_engine_process_button.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override public void handle(ActionEvent e) {
+                        stop_engine_process();
                     }
-                }
-            });
+                });
+
+                Button engine_go_button=new Button();
+                engine_go_button.setText("Go");
+                engine_go_button.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override public void handle(ActionEvent e) {
+                        if(!engine_running)
+                        {
+                            go_infinite();
+                        }
+                    }
+                });
+
+                Button engine_stop_button=new Button();
+                engine_stop_button.setText("Stop");
+                engine_stop_button.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override public void handle(ActionEvent e) {
+                        stop_engine();
+                    }
+                });
+
+                Button engine_make_button=new Button();
+                engine_make_button.setText("Make");
+                engine_make_button.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override public void handle(ActionEvent e) {
+                        if((bestmove_algeb!="")&&(bestmove_algeb!=null))
+                        {
+
+                            bestmove.from_algeb(bestmove_algeb);
+                            make_move_show(bestmove);
+
+                        }
+                    }
+                });
+
+                //controls_box.getChildren().add(stop_engine_process_button);
+                controls_box.getChildren().add(engine_go_button);
+                controls_box.getChildren().add(engine_stop_button);
+                controls_box.getChildren().add(engine_make_button);
+
+            }
+
+            vertical_box.getChildren().add(canvas_group);
+
+            vertical_box.getChildren().add(fen_text);
+
+            vertical_box.getChildren().add(controls_box);
+
+            engine_text.setMaxHeight(100);
+
+            if(uci_engine_path!="")
+            {
+                vertical_box.getChildren().add(engine_text);
+            }
+
+            upper_canvas.setOnMouseDragged(mouseHandler);
+            upper_canvas.setOnMouseClicked(mouseHandler);
+            upper_canvas.setOnMouseReleased(mouseHandler);
+
+            gc = canvas.getGraphicsContext2D();
+            upper_gc = upper_canvas.getGraphicsContext2D();
+            engine_gc = engine_canvas.getGraphicsContext2D();
+
+            board_color=Color.rgb(255, 220, 220);
+            piece_color=Color.rgb(0, 0, 0);
+            engine_color=Color.rgb(0, 0, 255);
             
-            //controls_box.getChildren().add(stop_engine_process_button);
-            controls_box.getChildren().add(engine_go_button);
-            controls_box.getChildren().add(engine_stop_button);
-            controls_box.getChildren().add(engine_make_button);
+            if(uci_engine_path!="")
+            {
+
+                uci_engine_process_builder=new ProcessBuilder(uci_engine_path);
+
+                try {
+                       uci_engine_process=uci_engine_process_builder.start();
+                       } catch(IOException ex) {
+
+                       }
+
+                engine_in=uci_engine_process.getInputStream();
+                engine_out=uci_engine_process.getOutputStream();
+
+                runnable_engine_read_thread=new MyRunnable();
+                runnable_engine_read_thread.kind="engine_read";
+                runnable_engine_read_thread.std_in=engine_in;
+                runnable_engine_read_thread.b=this;
+                engine_read_thread=new Thread(runnable_engine_read_thread);
+
+                runnable_engine_write_thread=new MyRunnable();
+                runnable_engine_write_thread.kind="engine_write";
+                runnable_engine_write_thread.std_out=engine_out;
+                runnable_engine_write_thread.command="";
+                engine_write_thread=new Thread(runnable_engine_write_thread);
+
+                engine_read_thread.start();
+                engine_write_thread.start();
+
+            }
             
         }
-        
-        vertical_box.getChildren().add(canvas_group);
-        
-        vertical_box.getChildren().add(fen_text);
-        
-        vertical_box.getChildren().add(controls_box);
-        
-        engine_text.setMaxHeight(100);
-        
-        if(uci_engine_path!="")
-        {
-            vertical_box.getChildren().add(engine_text);
-        }
-        
-        upper_canvas.setOnMouseDragged(mouseHandler);
-        upper_canvas.setOnMouseClicked(mouseHandler);
-        upper_canvas.setOnMouseReleased(mouseHandler);
-        
-        gc = canvas.getGraphicsContext2D();
-        upper_gc = upper_canvas.getGraphicsContext2D();
-        engine_gc = engine_canvas.getGraphicsContext2D();
-        
-        board_color=Color.rgb(255, 220, 220);
-        piece_color=Color.rgb(0, 0, 0);
-        engine_color=Color.rgb(0, 0, 255);
         
         reset();
-        
-        if(uci_engine_path!="")
-        {
-        
-            uci_engine_process_builder=new ProcessBuilder(uci_engine_path);
-
-            try {
-                   uci_engine_process=uci_engine_process_builder.start();
-                   } catch(IOException ex) {
-
-                   }
-
-            engine_in=uci_engine_process.getInputStream();
-            engine_out=uci_engine_process.getOutputStream();
-
-            runnable_engine_read_thread=new MyRunnable();
-            runnable_engine_read_thread.kind="engine_read";
-            runnable_engine_read_thread.std_in=engine_in;
-            runnable_engine_read_thread.b=this;
-            engine_read_thread=new Thread(runnable_engine_read_thread);
-
-            runnable_engine_write_thread=new MyRunnable();
-            runnable_engine_write_thread.kind="engine_write";
-            runnable_engine_write_thread.std_out=engine_out;
-            runnable_engine_write_thread.command="";
-            engine_write_thread=new Thread(runnable_engine_write_thread);
-
-            engine_read_thread.start();
-            engine_write_thread.start();
-            
-        }
         
     }
     
