@@ -155,21 +155,29 @@ public class Board {
     // move generation
     final static int move_table_size=20000;
     static MoveDescriptor move_table[]=new MoveDescriptor[move_table_size];
-    static int move_table_ptr[][][]=new int[8][8][32];
+    static int move_table_ptr[][][]=new int[8][8][64];
     
+    // but 5 sliding
+    final static int SLIDING=32;
+    // bit 4 straight
     final static int STRAIGHT=16;
+    // bit 3 diagonal
     final static int DIAGONAL=8;
-    final static int SLIDING=STRAIGHT|DIAGONAL;
+    // bit 2 single
     final static int SINGLE=4;
+    // bit 1 pawn
+    final static int IS_PAWN=2;
+    // bit 0 is for color
     
-    final static int QUEEN=STRAIGHT|DIAGONAL;
-    final static int ROOK=STRAIGHT;
-    final static int BISHOP=DIAGONAL;
-    final static int KNIGHT=SINGLE;
+    final static int QUEEN=SLIDING|STRAIGHT|DIAGONAL;
+    final static int ROOK=SLIDING|STRAIGHT;
+    final static int BISHOP=SLIDING|DIAGONAL;
     final static int KING=SINGLE|STRAIGHT|DIAGONAL;
-    final static int PAWN=2;
+    final static int KNIGHT=SINGLE;
+    final static int PAWN=SINGLE|IS_PAWN;
     
-    final static int PIECE_TYPE=30;
+    
+    final static int PIECE_TYPE=62;
     final static int PIECE_COLOR=1;
     
     final static int WHITE=1;
@@ -181,6 +189,7 @@ public class Board {
     private int move_gen_curr_ptr=0;
     private char current_move_gen_piece=' ';
     private int current_move_gen_piece_code=0;
+    private int current_move_gen_piece_type=0;
     private Boolean is_current_move_gen_piece_sliding=false;
     private int current_move_gen_piece_color=0;
     private Move current_move=new Move();
@@ -224,6 +233,7 @@ public class Board {
         {
             current_move_gen_piece=board[curr_i][curr_j];
             current_move_gen_piece_code=code_of(current_move_gen_piece);
+            current_move_gen_piece_type=current_move_gen_piece_code&PIECE_TYPE;
             current_move_gen_piece_color=color_of(current_move_gen_piece);
             
             is_current_move_gen_piece_sliding=((current_move_gen_piece_code&SLIDING)!=0);
@@ -252,8 +262,10 @@ public class Board {
                 int to_piece_code=code_of(to_piece);
                 int to_piece_color=color_of(to_piece);
                 
-                if(to_piece_color==current_move_gen_piece_color)
+                if((to_piece!=' ')&&(to_piece_color==current_move_gen_piece_color))
                 {
+                    
+                    // own piece
                     if(is_current_move_gen_piece_sliding)
                     {
                         move_gen_curr_ptr=md.next_vector;
@@ -273,9 +285,12 @@ public class Board {
                     current_move.j2=to_j;
                     current_move.prom_piece=' ';
                     
-                    if(to_piece!=' ')
+                    Boolean is_capture=to_piece!=' ';
+                    
+                    if(is_capture)
                     {
                     
+                        // capture
                         if(is_current_move_gen_piece_sliding)
                         {
                             move_gen_curr_ptr=md.next_vector;
@@ -291,7 +306,41 @@ public class Board {
                         move_gen_curr_ptr++;
                     }
                     
-                    return true;
+                    if(current_move_gen_piece_type==PAWN)
+                    {
+                        if(is_capture)
+                        {
+                            // pawn captures only to the sides
+                            if(curr_i!=to_i)
+                            {
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            // pawn moves only straight ahead
+                            if(curr_i==to_i)
+                            {
+                                if(Math.abs(to_j-curr_j)<2)
+                                {
+                                    // can always move one square forward
+                                    return true;
+                                }
+                                else
+                                {
+                                    if(board[curr_i][curr_j+(to_j-curr_j)/2]==' ')
+                                    {
+                                        // push by two requires empty passing square
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        return true;
+                    }
                     
                 }
                 
@@ -465,7 +514,7 @@ public class Board {
         {
             for(int j=0;j<8;j++)
             {
-                for(int p=0;p<32;p++)
+                for(int p=0;p<64;p++)
                 {
                     int piece_type=p&PIECE_TYPE;
                     int piece_color=p&PIECE_COLOR;
@@ -475,11 +524,7 @@ public class Board {
                     if((piece_type==QUEEN)||(piece_type==ROOK)||(piece_type==BISHOP)||(piece_type==KNIGHT)||(piece_type==KING)||(piece_type==PAWN))
                     {
                         
-                        Boolean is_single=(
-                                ((piece_type&SINGLE)!=0)
-                                ||
-                                (piece_type==PAWN)
-                        );
+                        Boolean is_single=((piece_type&SINGLE)!=0);
                         
                         move_table_ptr[i][j][p]=move_table_curr_ptr;
                         
@@ -489,6 +534,7 @@ public class Board {
                             {
                                 if(
                                         
+                                        // cannot be both zero
                                         ((Math.abs(vi)+Math.abs(vj))>0)
                                         
                                         &&
@@ -574,13 +620,17 @@ public class Board {
                                     
                                     int ci=i;
                                     int cj=j;
+                                    
                                     Boolean square_ok;
+                                    
                                     do
                                     {
                                         
                                         ci+=vi;
                                         cj+=vj;
+                                        
                                         square_ok=square_ok(ci,cj);
+                                        
                                         if(square_ok)
                                         {
                                             MoveDescriptor md=new MoveDescriptor();
