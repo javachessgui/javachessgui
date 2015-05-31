@@ -35,6 +35,8 @@ import javafx.application.Platform;
 
 import javax.swing.JOptionPane; 
 
+import java.util.Arrays;
+
 public class Board {
     
     public Game g=null;
@@ -107,11 +109,13 @@ public class Board {
     // gc attributes
     private Group canvas_group=new Group();
     
+    public HBox main_box=new HBox(2);
     public VBox vertical_box=new VBox(2);
     private HBox controls_box=new HBox(2);
     
     private TextField fen_text = new TextField ();
     public TextArea engine_text = new TextArea ();
+    public TextArea legal_move_list = new TextArea ();
     
     public Canvas canvas;
     public Canvas upper_canvas;
@@ -1119,6 +1123,8 @@ public class Board {
         
         update_engine();
         
+        list_legal_moves();
+        
     }
     
     private String board_to_rep()
@@ -1594,11 +1600,14 @@ public class Board {
     {
         init_move_generator();
         
+        String[] legal_move_list_buffer=new String[500];
+        for(int i=0;i<500;i++){legal_move_list_buffer[i]="z";}
+        String legal_move_list_as_string;
+        int legal_move_list_buffer_cnt=0;
+        
         while(next_pseudo_legal_move())
         {
             String algeb=current_move.to_algeb();
-            
-            String san=to_san(current_move);
             
             Board dummy=new Board(false);
             
@@ -1608,14 +1617,25 @@ public class Board {
             
             if(!dummy.is_in_check(turn))
             {
+                
+                String san=to_san(current_move);
             
-                System.out.print(algeb+" "+san+" ");
+                legal_move_list_buffer[legal_move_list_buffer_cnt++]=san;
             
             }
             
         }
         
-        System.out.println();
+        
+        Arrays.sort(legal_move_list_buffer);
+        
+        legal_move_list_as_string="";
+        for(int i=0;i<legal_move_list_buffer_cnt;i++)
+        {
+            legal_move_list_as_string+=legal_move_list_buffer[i]+"\n";
+        }
+        
+        legal_move_list.setText(legal_move_list_as_string);
         
     }
     
@@ -1872,8 +1892,6 @@ public class Board {
             go_infinite();
         }
         
-        list_legal_moves();
-        
     }
     
     private static int turn_of(char piece)
@@ -2104,6 +2122,8 @@ public class Board {
             score_verbal="";
             score_numerical=0;
             engine_running=false;
+            
+            legal_move_list.setMaxWidth(120);
         
             canvas=new Canvas(board_size,board_size+info_bar_size);
             upper_canvas=new Canvas(board_size,board_size);
@@ -2216,6 +2236,10 @@ public class Board {
             vertical_box.getChildren().add(fen_text);
 
             vertical_box.getChildren().add(controls_box);
+            
+            main_box.getChildren().add(vertical_box);
+            
+            main_box.getChildren().add(legal_move_list);
 
             engine_text.setMaxHeight(100);
 

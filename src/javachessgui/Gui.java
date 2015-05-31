@@ -29,7 +29,7 @@ public class Gui {
         
         b.record_position();
         
-        horizontal_box.getChildren().add(b.vertical_box);
+        horizontal_box.getChildren().add(b.main_box);
         horizontal_box.getChildren().add(g.vertical_box);
         
     }
