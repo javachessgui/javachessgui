@@ -1471,7 +1471,7 @@ public class Board {
         }
         
         // ep capture
-        if((m.orig_piece=='p')||(m.orig_piece=='P')&&(dest_piece==' ')&&(m.i1!=m.i2))
+        if(((m.orig_piece=='p')||(m.orig_piece=='P'))&&(dest_piece==' ')&&(m.i1!=m.i2))
         {
             board[m.i2][m.j1]=' ';
         }
@@ -1772,7 +1772,56 @@ public class Board {
     
     private String to_san(Move m)
     {
-        return to_san_raw(m);
+        String raw=to_san_raw(m);
+        
+        if(m.prom_piece!=' ')
+        {
+            raw+="="+Character.toUpperCase(m.prom_piece);
+        }
+        
+        Board dummy=new Board(false);
+            
+        dummy.set_from_fen(report_fen());
+            
+        dummy.make_move(m);
+        
+        Boolean is_check=dummy.is_in_check(dummy.turn);
+        
+        dummy.init_move_generator();
+        
+        Boolean has_legal=false;
+        
+        while((dummy.next_pseudo_legal_move())&&(!has_legal))
+        {
+            Board dummy2=new Board(false);
+            
+            dummy2.set_from_fen(dummy.report_fen());
+            
+            dummy2.make_move(dummy.current_move);
+            
+            if(!dummy2.is_in_check(dummy.turn))
+            {
+                has_legal=true;
+            }
+        }
+        
+        if(is_check)
+        {
+            if(has_legal)
+            {
+                raw+="+";
+            }
+            else
+            {
+                raw+="#";
+            }
+        }
+        else if(!has_legal)
+        {
+            raw+="=";
+        }
+        
+        return raw;
     }
     
     private void make_move_show(Move m)
