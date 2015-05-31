@@ -174,9 +174,137 @@ public class Board {
     
     final static int WHITE=1;
     final static int BLACK=0;
+    
+    private int curr_i=0;
+    private int curr_j=0;
+    
+    private int move_gen_curr_ptr=0;
+    private char current_move_gen_piece=' ';
+    private int current_move_gen_piece_code=0;
+    private Boolean is_current_move_gen_piece_sliding=false;
+    private int current_move_gen_piece_color=0;
+    private Move current_move=new Move();
     ////////////////////////////////////////////////////////
     
-    private int piece_code_of(int piece)
+    private void init_move_generator()
+    {
+        curr_i=-1;
+        curr_j=0;
+        next_square();
+    }
+    
+    private void next_square()
+    {
+        Boolean stop=false;
+        do
+        {
+            curr_i++;
+            if(curr_i>7)
+            {
+                curr_i=0;
+                curr_j++;
+            }
+            if(curr_j>7)
+            {
+                stop=true;
+            }
+            else
+            {
+                char gen_piece=board[curr_i][curr_j];
+                stop=(
+                        (gen_piece!=' ')
+                        &&
+                        (turn_of(gen_piece)==turn)
+                );
+            }
+        }
+        while(!stop);
+        
+        if(curr_j<8)
+        {
+            current_move_gen_piece=board[curr_i][curr_j];
+            current_move_gen_piece_code=code_of(current_move_gen_piece);
+            current_move_gen_piece_color=color_of(current_move_gen_piece);
+            
+            is_current_move_gen_piece_sliding=((current_move_gen_piece_code&SLIDING)!=0);
+            
+            move_gen_curr_ptr=move_table_ptr[curr_i][curr_j][current_move_gen_piece_code];
+        }
+        
+    }
+    
+    private Boolean next_pseudo_legal_move()
+    {
+        
+        while(curr_j<8)
+        {
+            
+            while(!move_table[move_gen_curr_ptr].end_piece)
+            {
+                
+                MoveDescriptor md=move_table[move_gen_curr_ptr];
+                
+                int to_i=md.to_i;
+                int to_j=md.to_j;
+                
+                char to_piece=board[to_i][to_j];
+                
+                int to_piece_code=code_of(to_piece);
+                int to_piece_color=color_of(to_piece);
+                
+                if(to_piece_color==current_move_gen_piece_color)
+                {
+                    if(is_current_move_gen_piece_sliding)
+                    {
+                        move_gen_curr_ptr=md.next_vector;
+                    }
+                    else
+                    {
+                        move_gen_curr_ptr++;
+                    }
+                }
+                else
+                {
+                    current_move=new Move();
+                    
+                    current_move.i1=curr_i;
+                    current_move.j1=curr_j;
+                    current_move.i2=to_i;
+                    current_move.j2=to_j;
+                    current_move.prom_piece=' ';
+                    
+                    if(to_piece!=' ')
+                    {
+                    
+                        if(is_current_move_gen_piece_sliding)
+                        {
+                            move_gen_curr_ptr=md.next_vector;
+                        }
+                        else
+                        {
+                            move_gen_curr_ptr++;
+                        }
+                        
+                    }
+                    else
+                    {
+                        move_gen_curr_ptr++;
+                    }
+                    
+                    return true;
+                    
+                }
+                
+            }
+            
+            next_square();
+            
+        }
+        
+        return false;
+    }
+    
+    private static int code_of(int piece)
     {
         
         if(piece=='p'){return BLACK|PAWN;}
@@ -342,7 +470,7 @@ public class Board {
                     int piece_type=p&PIECE_TYPE;
                     int piece_color=p&PIECE_COLOR;
                     
-                    System.out.println("i "+i+" j "+j+" p "+p+" curr "+move_table_curr_ptr);
+                    //System.out.println("i "+i+" j "+j+" p "+p+" curr "+move_table_curr_ptr);
                     
                     if((piece_type==QUEEN)||(piece_type==ROOK)||(piece_type==BISHOP)||(piece_type==KNIGHT)||(piece_type==KING)||(piece_type==PAWN))
                     {
@@ -1137,6 +1265,20 @@ public class Board {
         
     }
     
+    private void list_pseudo_legal_moves()
+    {
+        init_move_generator();
+        
+        while(next_pseudo_legal_move())
+        {
+            String algeb=current_move.to_algeb();
+            
+            System.out.print(algeb+" ");
+        }
+        
+        System.out.println("");
+    }
+    
     private void make_move_show(Move m)
     {
         
@@ -1164,15 +1306,27 @@ public class Board {
         {
             go_infinite();
         }
+        
+        list_pseudo_legal_moves();
+        
     }
     
-    private int turn_of_piece(char piece)
+    private static int turn_of(char piece)
     {
         if((piece>='a')&&(piece<='z'))
         {
             return TURN_BLACK;
         }
         return TURN_WHITE;
+    }
+    
+    private static int color_of(char piece)
+    {
+        if((piece>='a')&&(piece<='z'))
+        {
+            return BLACK;
+        }
+        return WHITE;
     }
     
     private EventHandler<MouseEvent> mouseHandler = new EventHandler<MouseEvent>() {
@@ -1206,7 +1360,7 @@ public class Board {
                     }
                     
                     // wrong turn
-                    if(turn_of_piece(orig_piece)!=turn)
+                    if(turn_of(orig_piece)!=turn)
                     {
                         drawBoard();
                         return;
