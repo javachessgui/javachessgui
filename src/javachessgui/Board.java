@@ -262,7 +262,81 @@ public class Board {
                 int to_piece_code=code_of(to_piece);
                 int to_piece_color=color_of(to_piece);
                 
-                if((to_piece!=' ')&&(to_piece_color==current_move_gen_piece_color))
+                current_move=new Move();
+                    
+                current_move.i1=curr_i;
+                current_move.j1=curr_j;
+                current_move.i2=to_i;
+                current_move.j2=to_j;
+                current_move.prom_piece=' ';
+                
+                if(md.castling)
+                {
+                    
+                    move_gen_curr_ptr++;
+                    
+                    if((curr_j==0)&&(to_i==6))
+                    {
+                        // black kingside
+                        if(
+                            (board[6][0]==' ')
+                            &&
+                            (board[5][0]==' ')
+                            &&    
+                            (castling_rights.indexOf('k')>=0)    
+                        )
+                        {
+                            return true;
+                        }
+                    }
+                    
+                    if((curr_j==0)&&(to_i==2))
+                    {
+                        // black queenside
+                        if(
+                            (board[3][0]==' ')
+                            &&
+                            (board[2][0]==' ')
+                            &&    
+                            (castling_rights.indexOf('q')>=0)    
+                        )
+                        {
+                            return true;
+                        }
+                    }
+                    
+                    if((curr_j==7)&&(to_i==6))
+                    {
+                        // white kingside
+                        if(
+                            (board[6][7]==' ')
+                            &&
+                            (board[5][7]==' ')
+                            &&    
+                            (castling_rights.indexOf('K')>=0)    
+                        )
+                        {
+                            return true;
+                        }
+                    }
+                    
+                    if((curr_j==7)&&(to_i==2))
+                    {
+                        // white queenside
+                        if(
+                            (board[3][7]==' ')
+                            &&
+                            (board[2][7]==' ')
+                            &&    
+                            (castling_rights.indexOf('Q')>=0)    
+                        )
+                        {
+                            return true;
+                        }
+                    }
+                    
+                }
+                else if((to_piece!=' ')&&(to_piece_color==current_move_gen_piece_color))
                 {
                     
                     // own piece
@@ -277,13 +351,6 @@ public class Board {
                 }
                 else
                 {
-                    current_move=new Move();
-                    
-                    current_move.i1=curr_i;
-                    current_move.j1=curr_j;
-                    current_move.i2=to_i;
-                    current_move.j2=to_j;
-                    current_move.prom_piece=' ';
                     
                     Boolean is_capture=to_piece!=' ';
                     
@@ -364,8 +431,10 @@ public class Board {
         if(piece=='B'){return WHITE|BISHOP;}
         if(piece=='r'){return BLACK|ROOK;}
         if(piece=='R'){return WHITE|ROOK;}
-        if(piece=='Q'){return BLACK|QUEEN;}
-        if(piece=='q'){return WHITE|QUEEN;}
+        if(piece=='q'){return BLACK|QUEEN;}
+        if(piece=='Q'){return WHITE|QUEEN;}
+        if(piece=='k'){return BLACK|KING;}
+        if(piece=='K'){return WHITE|KING;}
         
         return 0;
     }
@@ -532,6 +601,33 @@ public class Board {
                         {
                             for(int vj=-2;vj<=2;vj++)
                             {
+                                
+                                Boolean is_castling=(
+                                            (
+                                            // castling white
+                                                (p==(WHITE|KING))
+                                                &&
+                                                (
+                                                    ((i==4)&&(j==7)&&(vi==2)&&(vj==0))
+                                                    ||
+                                                    ((i==4)&&(j==7)&&(vi==-2)&&(vj==0))
+                                                )
+                                            )
+                                        
+                                            ||
+                                        
+                                            (
+                                                // castling black
+                                                (p==(BLACK|KING))
+                                                &&
+                                                (
+                                                    ((i==4)&&(j==0)&&(vi==2)&&(vj==0))
+                                                    ||
+                                                    ((i==4)&&(j==0)&&(vi==-2)&&(vj==0))
+                                                )
+                                            )
+                                );
+                                
                                 if(
                                         
                                         // cannot be both zero
@@ -540,6 +636,10 @@ public class Board {
                                         &&
                                         
                                         (
+                                        
+                                            (is_castling)
+                                        
+                                            ||
                                         
                                             (
                                                 ((vi*vj)!=0)
@@ -636,6 +736,7 @@ public class Board {
                                             MoveDescriptor md=new MoveDescriptor();
                                             md.to_i=ci;
                                             md.to_j=cj;
+                                            md.castling=is_castling;
                                             
                                             move_table[move_table_curr_ptr++]=md;
                                         }
