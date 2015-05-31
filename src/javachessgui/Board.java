@@ -1604,9 +1604,11 @@ public class Board {
             
             dummy.make_move(current_move);
             
-            System.out.println("algeb: "+algeb+(dummy.is_in_check(turn)?"+":""));
+            System.out.print(algeb+(dummy.is_in_check(turn)?"+":"")+" ");
             
         }
+        
+        System.out.println();
         
     }
     

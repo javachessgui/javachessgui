@@ -33,6 +33,11 @@ public class Move {
         algeb+=ij_to_algeb(i1,j1);
         algeb+=ij_to_algeb(i2,j2);
         
+        if(prom_piece!=' ')
+        {
+            algeb+=prom_piece;
+        }
+        
         return algeb;
     }
     
