@@ -155,6 +155,7 @@ public class Board {
     
     public HBox main_box=new HBox(2);
     public VBox vertical_box=new VBox(2);
+    private HBox game_controls_box=new HBox(2);
     private HBox controls_box=new HBox(2);
     private HBox make_san_box=new HBox(2);
     
@@ -2538,6 +2539,27 @@ public class Board {
             }
 
             vertical_box.getChildren().add(canvas_group);
+            
+            Button back_button=new Button();
+            back_button.setText("<");
+            back_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                 
+                }
+            });
+            
+            Button forward_button=new Button();
+            forward_button.setText(">");
+            forward_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                 
+                }
+            });
+
+            game_controls_box.getChildren().add(back_button);
+            game_controls_box.getChildren().add(forward_button);
+            
+            vertical_box.getChildren().add(game_controls_box);
 
             vertical_box.getChildren().add(fen_text);
             

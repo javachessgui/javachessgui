@@ -128,6 +128,8 @@ public class Game {
         
             list.setItems(items);
             
+            list.getSelectionModel().select(game_ptr);
+            
             list.setOnMouseClicked(new EventHandler<Event>() {
 
                         @Override
