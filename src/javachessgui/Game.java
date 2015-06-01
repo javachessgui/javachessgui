@@ -19,6 +19,8 @@ import javafx.scene.control.TextArea;
 
 public class Game {
     
+        String initial_dir="";
+    
         ListView<String> list = new ListView<String>();
         
         TextArea pgn_text=new TextArea();
@@ -32,11 +34,13 @@ public class Game {
         
         private TextArea game_text = new TextArea ();
         
-        final private int max_moves=250;
+        final private int MAX_MOVES=250;
         
-        private String[] moves=new String[max_moves];
+        String[] pgn_lines=new String[MAX_MOVES];
+        
+        private String[] moves=new String[MAX_MOVES];
         public String initial_position;
-        private String[] positions=new String[max_moves];
+        private String[] positions=new String[MAX_MOVES];
         
         private int move_ptr=0;
         
@@ -61,7 +65,7 @@ public class Game {
                 game_ptr=move_ptr;
             }
             
-            if(move_ptr>=max_moves)
+            if(move_ptr>=MAX_MOVES)
             {
                 
             }
@@ -173,7 +177,7 @@ public class Game {
         private void update_game()
         {
             
-            String[] game_buffer=new String[max_moves+1];
+            String[] game_buffer=new String[MAX_MOVES+1];
             
             game_buffer[0]="*";
             
@@ -239,6 +243,61 @@ public class Game {
             
         }
         
+        private void set_from_pgn_lines()
+        {
+            
+            //move_ptr=0;
+            
+            //initial_position="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            
+            int line_cnt=0;
+            
+            // read headers
+            int empty_cnt=0;
+            
+            Boolean finished=false;
+            
+            do
+            {
+                String line=pgn_lines[line_cnt++];
+                
+                if(line_cnt<pgn_lines.length)
+                {
+                    if(line.length()<2)
+                    {
+                        finished=true;
+                    }
+                    else
+                    {
+                        if(line.charAt(0)!='[')
+                        {
+                            finished=true;
+                        }
+                        else
+                        {
+                            //System.out.println("header "+line);
+                        }
+                    }
+                }
+                else
+                {
+                    finished=true;
+                }
+                
+            }while(!finished);
+            
+            String body="";
+            while(line_cnt<pgn_lines.length)
+            {
+                body+=pgn_lines[line_cnt++]+" ";
+            }
+            
+            System.out.println("body: "+body);
+            
+            
+            
+        }
+        
         public Game(Stage set_s,Board set_b)
         {
             
@@ -251,8 +310,26 @@ public class Game {
             open_pgn_button.setOnAction(new EventHandler<ActionEvent>() {
                     
                 @Override public void handle(ActionEvent e) {
+                    
+                    if(initial_dir!="")
+                    {
+                        File dir=new File(initial_dir);
+
+                        f.setInitialDirectory(dir);
+                    }
+                                        
                      File file = f.showOpenDialog(s);
-                     b.reset();
+                     
+                     String path=file.getPath();
+                     
+                     initial_dir=path.substring(0,path.lastIndexOf(File.separator));
+                     
+                     MyFile my_file=new MyFile(path);
+                     
+                     pgn_lines=my_file.read_lines();
+                     
+                     set_from_pgn_lines();
+                     
                     }
                 
             });
