@@ -2304,6 +2304,12 @@ public class Board {
             
         }
         
+        if(san.charAt(0)=='=')
+        {
+            // promotion
+            m.prom_piece=san.charAt(1);
+        }
+        
         return m;
     }
     
