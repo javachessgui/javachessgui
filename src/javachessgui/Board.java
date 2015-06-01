@@ -119,9 +119,9 @@ public class Board {
     private String ep_square_algeb;
     
     private int halfmove_clock;
-    private int fullmove_number;
+    public int fullmove_number;
     
-    private int turn;
+    public int turn;
     
     private String rep;
     private char[][] board=new char[8][8];

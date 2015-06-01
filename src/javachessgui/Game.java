@@ -20,6 +20,8 @@ import javafx.scene.control.TextArea;
 public class Game {
     
         ListView<String> list = new ListView<String>();
+        
+        TextArea pgn_text=new TextArea();
     
         public VBox vertical_box=new VBox(2);
         FileChooser f=new FileChooser();
@@ -189,25 +191,51 @@ public class Game {
             list.setItems(items);
             
             list.getSelectionModel().select(game_ptr);
+            list.scrollTo(game_ptr);
             
-            list.setOnMouseClicked(new EventHandler<Event>() {
-
-                        @Override
-                        public void handle(Event event) {
-                            
-                            int selected =  list.getSelectionModel().getSelectedIndex();
-
-                            String pos=initial_position;
-                            if(selected>0){pos=positions[selected-1];}
-                            
-                            game_ptr=selected;
-                            
-                            b.set_from_fen_inner(pos,false);
-                            b.drawBoard();
-
-                    }
-
-                });
+            pgn_text.setText(calc_pgn());
+                        
+        }
+        
+        private String pgn;
+        public String calc_pgn()
+        {
+            Board dummy=new Board(false);
+            
+            dummy.set_from_fen(initial_position);
+            
+            int fullmove_number=dummy.fullmove_number;
+            int turn=dummy.turn;
+            
+            pgn="[StartFen \""+initial_position+"\"]";
+            
+            pgn+="\n\n";
+            
+            if(move_ptr>0)
+            {
+                pgn+=fullmove_number+". ";
+                
+                if(turn==Board.TURN_BLACK)
+                {
+                    pgn+="... ";
+                }
+                
+                pgn+=moves[0]+" ";
+            }
+            
+            for(int i=1;i<move_ptr;i++)
+            {
+                dummy.set_from_fen(positions[i-1]);
+                turn=dummy.turn;
+                if(dummy.turn==Board.TURN_WHITE)
+                {
+                    fullmove_number++;
+                    pgn+=fullmove_number+". ";
+                }
+                pgn+=moves[i]+" ";
+            }
+            
+            return pgn;
             
         }
         
@@ -234,6 +262,27 @@ public class Game {
             list.setMaxWidth(120);
             
             vertical_box.getChildren().add(list);
+            
+            vertical_box.getChildren().add(pgn_text);
+            
+            list.setOnMouseClicked(new EventHandler<Event>() {
+
+                        @Override
+                        public void handle(Event event) {
+                            
+                            int selected =  list.getSelectionModel().getSelectedIndex();
+
+                            String pos=initial_position;
+                            if(selected>0){pos=positions[selected-1];}
+                            
+                            game_ptr=selected;
+                            
+                            b.set_from_fen_inner(pos,false);
+                            b.drawBoard();
+
+                    }
+
+                });
             
             
         }
