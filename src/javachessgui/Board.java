@@ -2540,11 +2540,21 @@ public class Board {
 
             vertical_box.getChildren().add(canvas_group);
             
+            Button to_begin_button=new Button();
+            to_begin_button.setText("<<");
+            to_begin_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                 set_from_fen_inner(g.to_begin(),false);
+                    make_move_show(null);
+                }
+            });
+            
             Button back_button=new Button();
             back_button.setText("<");
             back_button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                 
+                 set_from_fen_inner(g.back(),false);
+                    make_move_show(null);
                 }
             });
             
@@ -2552,12 +2562,24 @@ public class Board {
             forward_button.setText(">");
             forward_button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                 
+                 set_from_fen_inner(g.forward(),false);
+                    make_move_show(null);
+                }
+            });
+            
+            Button to_end_button=new Button();
+            to_end_button.setText(">>");
+            to_end_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                 set_from_fen_inner(g.to_end(),false);
+                    make_move_show(null);
                 }
             });
 
+            game_controls_box.getChildren().add(to_begin_button);
             game_controls_box.getChildren().add(back_button);
             game_controls_box.getChildren().add(forward_button);
+            game_controls_box.getChildren().add(to_end_button);
             
             vertical_box.getChildren().add(game_controls_box);
 

@@ -76,6 +76,66 @@ public class Game {
             
         }
         
+        public String to_begin()
+        {
+            game_ptr=0;
+            update_game();
+            return initial_position;
+        }
+        
+        public String back()
+        {
+            
+            if(game_ptr==0)
+            {
+                return initial_position;
+            }
+            else
+            {
+                game_ptr--;
+                update_game();
+                if(game_ptr==0)
+                {
+                    return initial_position;
+                }
+                return positions[game_ptr-1];
+                
+            }
+            
+        }
+        
+        public String forward()
+        {
+            
+            if(game_ptr==move_ptr)
+            {
+                if(game_ptr==0)
+                {
+                    return initial_position;
+                }
+                return positions[game_ptr-1];
+            }
+            else
+            {
+                game_ptr++;
+                update_game();
+                return positions[game_ptr-1];
+                
+            }
+            
+        }
+        
+        public String to_end()
+        {
+            game_ptr=move_ptr;
+            update_game();
+            if(move_ptr==0)
+            {
+                return initial_position;
+            }
+            return positions[move_ptr-1];
+        }
+        
         public String delete_move()
         {
             
