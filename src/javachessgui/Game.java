@@ -10,9 +10,16 @@ import javafx.stage.*;
 import javafx.stage.FileChooser;
 
 import java.io.File;
+import java.util.Arrays;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.Event;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 
 public class Game {
+    
+        ListView<String> list = new ListView<String>();
     
         public VBox vertical_box=new VBox(2);
         FileChooser f=new FileChooser();
@@ -23,10 +30,11 @@ public class Game {
         
         private TextArea game_text = new TextArea ();
         
-        final private int max_moves=5000;
+        final private int max_moves=250;
         final private int max_positions=max_moves+1;
         
         private Move[] moves=new Move[max_moves];
+        private String[] san_moves=new String[max_moves];
         private String[] positions=new String[max_positions];
         
         private int move_ptr=0;
@@ -48,9 +56,12 @@ public class Game {
             }
             else
             {
+                
                 Move copy=new Move();
                 copy.copy(m);
+                san_moves[move_ptr]=b.to_san(m);
                 moves[move_ptr++]=copy;
+                
             }
             
             update_game();
@@ -93,21 +104,37 @@ public class Game {
         
         private void update_game()
         {
-            String game_buffer="";
             
-            if(move_ptr>0)
-            {
-                for(int i=0;i<move_ptr;i++)
-                {
-                    game_buffer+=moves[i].to_algeb()+" ";
-                }
-            }
-            else
-            {
-                game_buffer="*";
-            }
+            String[] game_buffer=new String[max_positions];
             
-            game_text.setText(game_buffer);
+            game_buffer[0]="*";
+            
+            for(int i=0;i<move_ptr;i++)
+            {
+                game_buffer[i+1]=san_moves[i];
+            }
+
+            //game_text.setText(game_buffer);
+            
+            ObservableList<String> items =FXCollections.observableArrayList(
+                Arrays.copyOfRange(game_buffer, 0, move_ptr+1)
+            );
+        
+            list.setItems(items);
+
+            list.setOnMouseClicked(new EventHandler<Event>() {
+
+                        @Override
+                        public void handle(Event event) {
+                            
+                            int selected =  list.getSelectionModel().getSelectedIndex();
+
+                            b.set_from_fen_inner(positions[selected],false);
+                            b.drawBoard();
+
+                    }
+
+                });
             
         }
         
@@ -130,7 +157,14 @@ public class Game {
             });
             
             vertical_box.getChildren().add(open_pgn_button);
-            vertical_box.getChildren().add(game_text);
+            
+            list.setMaxWidth(120);
+            
+            vertical_box.getChildren().add(list);
+            
+            //vertical_box.getChildren().add(game_text);
+            
+            
             
             reset();
             

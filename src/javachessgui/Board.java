@@ -74,7 +74,6 @@ import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.control.ListView;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
@@ -1187,12 +1186,12 @@ public class Board {
         return rep;
     }
     
-    private Boolean set_from_fen(String fen)
+    public Boolean set_from_fen(String fen)
     {
         return set_from_fen_inner(fen,true);
     }
     
-    private Boolean set_from_fen_inner(String fen,Boolean do_reset_game)
+    public Boolean set_from_fen_inner(String fen,Boolean do_reset_game)
     {
         
         rep="";
@@ -1558,8 +1557,11 @@ public class Board {
         for(int p=0;p<all_pieces.length;p++)
         {
             
-            int check_ptr=move_table_ptr[i][j][all_pieces[p]|color];
-            char test_piece=piece_of_code(all_pieces[p]|attacker_color);
+            int piece_code=all_pieces[p];
+            int piece_type=piece_code&PIECE_TYPE;
+            int check_ptr=move_table_ptr[i][j][piece_code|color];
+            
+            char test_piece=piece_of_code(piece_code|attacker_color);
             
             MoveDescriptor md;
             do
@@ -1577,6 +1579,15 @@ public class Board {
                     int to_j=md.to_j;
                     
                     char to_piece=board[to_i][to_j];
+                    
+                    if(piece_type==PAWN)
+                    {
+                        if(to_i==i)
+                        {
+                            // pawn cannot check forward                            
+                            to_piece=' ';
+                        }
+                    }
                     
                     if(to_piece==test_piece)
                     {
@@ -1647,9 +1658,7 @@ public class Board {
     {
         init_move_generator();
         
-        String[] legal_move_list_buffer=new String[500];
-        
-        for(int i=0;i<500;i++){legal_move_list_buffer[i]="z";}
+        String[] legal_move_list_buffer=new String[250];
         
         String legal_move_list_as_string;
         int legal_move_list_buffer_cnt=0;
@@ -1675,27 +1684,12 @@ public class Board {
             
         }
         
+        String[] legal_move_list_buffer_slice=Arrays.copyOfRange(legal_move_list_buffer,0,legal_move_list_buffer_cnt);
         
-        
-        Arrays.sort(legal_move_list_buffer);
-        for(int i=0;i<500;i++)
-            {
-                if(legal_move_list_buffer[i].equals("z"))
-                {
-                    legal_move_list_buffer[i]="";
-                }
-            }
-        
-        legal_move_list_as_string="";
-        for(int i=0;i<legal_move_list_buffer_cnt;i++)
-        {
-            legal_move_list_as_string+=legal_move_list_buffer[i]+"\n";
-        }
-        
-        //legal_move_list.setText(legal_move_list_as_string);
+        Arrays.sort(legal_move_list_buffer_slice);
         
         ObservableList<String> items =FXCollections.observableArrayList (
-                legal_move_list_buffer);
+                legal_move_list_buffer_slice);
         
         list.setItems(items);
         
@@ -1886,7 +1880,7 @@ public class Board {
         
     }
     
-    private String to_san(Move m)
+    public String to_san(Move m)
     {
         String raw=to_san_raw(m);
         
@@ -1953,9 +1947,11 @@ public class Board {
         
         if(m!=null)
         {
+            
+            g.add_move(m);
+            
             make_move(m);
 
-            g.add_move(m);
             record_position();
         }
         
@@ -2391,7 +2387,7 @@ public class Board {
         return m;
     }
     
-    private void make_san_move(String san,Boolean show)
+    public void make_san_move(String san,Boolean show)
     {
         Move m=san_to_move(san);
         
@@ -2572,7 +2568,7 @@ public class Board {
             
             //main_box.getChildren().add(legal_move_list);
             
-            //xxx
+            list.setMaxWidth(80);
             
             main_box.getChildren().add(list);
 
