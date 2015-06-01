@@ -31,25 +31,34 @@ public class Game {
         private TextArea game_text = new TextArea ();
         
         final private int max_moves=250;
-        final private int max_positions=max_moves+1;
         
-        private Move[] moves=new Move[max_moves];
-        private String[] san_moves=new String[max_moves];
-        private String[] positions=new String[max_positions];
+        private String[] moves=new String[max_moves];
+        public String initial_position;
+        private String[] positions=new String[max_moves];
         
         private int move_ptr=0;
-        private int position_ptr=0;
         
-        public void reset()
+        private int game_ptr=0;
+        
+        public void reset(String initial_fen)
         {
+            
             move_ptr=0;
-            position_ptr=0;
+            
+            initial_position=initial_fen;
             
             update_game();
+            
         }
         
-        public void add_move(Move m)
+        public void add_move(String san,String fen_after)
         {
+            
+            if(game_ptr<move_ptr)
+            {
+                game_ptr=move_ptr;
+            }
+            
             if(move_ptr>=max_moves)
             {
                 
@@ -57,61 +66,58 @@ public class Game {
             else
             {
                 
-                Move copy=new Move();
-                copy.copy(m);
-                san_moves[move_ptr]=b.to_san(m);
-                moves[move_ptr++]=copy;
+                positions[move_ptr]=fen_after;
+                moves[move_ptr++]=san;
+                game_ptr++;
                 
             }
             
             update_game();
+            
         }
         
         public String delete_move()
         {
-            if(position_ptr==0)
+            
+            if(game_ptr<move_ptr)
+            {
+                move_ptr=game_ptr;
+            }
+            
+            if(move_ptr==0)
             {
                 // nothing to delete
-                return(positions[0]);
+                return(initial_position);
             }
             else
             {
                 if(move_ptr>0)
                 {
                     move_ptr--;
+                    game_ptr--;
                 }
-                position_ptr--;
-                if(position_ptr<=0)
-                {
-                    position_ptr=1;
-                }
-                update_game();
-                return(positions[position_ptr-1]);
-            }
-        }
-        
-        public void add_position(String fen)
-        {
-            if(position_ptr>=max_positions)
-            {
                 
-            }
-            else
-            {
-                positions[position_ptr++]=fen;
+                update_game();
+                
+                if(move_ptr==0)
+                {
+                    return initial_position;
+                }
+                
+                return(positions[move_ptr-1]);
             }
         }
         
         private void update_game()
         {
             
-            String[] game_buffer=new String[max_positions];
+            String[] game_buffer=new String[max_moves+1];
             
             game_buffer[0]="*";
             
             for(int i=0;i<move_ptr;i++)
             {
-                game_buffer[i+1]=san_moves[i];
+                game_buffer[i+1]=moves[i];
             }
 
             //game_text.setText(game_buffer);
@@ -121,7 +127,7 @@ public class Game {
             );
         
             list.setItems(items);
-
+            
             list.setOnMouseClicked(new EventHandler<Event>() {
 
                         @Override
@@ -129,7 +135,12 @@ public class Game {
                             
                             int selected =  list.getSelectionModel().getSelectedIndex();
 
-                            b.set_from_fen_inner(positions[selected],false);
+                            String pos=initial_position;
+                            if(selected>0){pos=positions[selected-1];}
+                            
+                            game_ptr=selected;
+                            
+                            b.set_from_fen_inner(pos,false);
                             b.drawBoard();
 
                     }
@@ -162,11 +173,6 @@ public class Game {
             
             vertical_box.getChildren().add(list);
             
-            //vertical_box.getChildren().add(game_text);
-            
-            
-            
-            reset();
             
         }
     

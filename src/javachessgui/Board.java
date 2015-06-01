@@ -876,17 +876,11 @@ public class Board {
         
     }
     
-    public void record_position()
-    {
-        g.add_position(report_fen());
-    }
-    
     private void reset_game()
     {
         if(g!=null)
         {
-            g.reset();
-            record_position();
+            g.reset(report_fen());
         }
     }
     
@@ -1297,7 +1291,7 @@ public class Board {
         return true;
     }
     
-    private String report_fen()
+    public String report_fen()
     {
         
         String fen="";
@@ -1948,11 +1942,12 @@ public class Board {
         if(m!=null)
         {
             
-            g.add_move(m);
+            String san=to_san(m);
             
             make_move(m);
 
-            record_position();
+            g.add_move(san,report_fen());
+            
         }
         
         bestmove_algeb="";

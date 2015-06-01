@@ -24,10 +24,14 @@ public class Gui {
         s=set_s;
         
         b=new Board(true);
+        
         g=new Game(s,b);
+        
+        g.reset(b.report_fen());
+        
         b.g=g;
         
-        b.record_position();
+        
         
         horizontal_box.getChildren().add(b.main_box);
         horizontal_box.getChildren().add(g.vertical_box);
