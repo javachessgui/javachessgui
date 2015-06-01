@@ -32,10 +32,9 @@ import java.io.BufferedWriter;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import javafx.application.Platform;
-
 import javax.swing.JOptionPane; 
-
 import java.util.Arrays;
+import javafx.scene.control.Label;
 
 public class Board {
     
@@ -112,8 +111,10 @@ public class Board {
     public HBox main_box=new HBox(2);
     public VBox vertical_box=new VBox(2);
     private HBox controls_box=new HBox(2);
+    private HBox make_san_box=new HBox(2);
     
     private TextField fen_text = new TextField ();
+    private TextField san_text = new TextField ();
     public TextArea engine_text = new TextArea ();
     public TextArea legal_move_list = new TextArea ();
     
@@ -2102,6 +2103,236 @@ public class Board {
         }
         
     }
+    
+    private Move san_to_move(String san)
+    {
+        Move m=new Move();
+        
+        m.from_algeb("a1a1");
+        
+        Move dummy=new Move();
+        
+        char file_algeb=' ';
+        char rank_algeb=' ';
+        String target_algeb="";
+        String algeb="";
+        
+        char piece=san.charAt(0);
+        if((piece>='a')&&(piece<='z'))
+        {
+            // pawn move
+            file_algeb=piece;
+            piece='P';
+            san=san.substring(1);
+        }
+        else
+        {
+            san=san.substring(1);
+        }
+        
+        Boolean takes=false;
+        
+        if(san.charAt(0)=='x')
+        {
+            takes=true;
+            san=san.substring(1);
+        }
+        
+        if((piece=='P')&&(!takes))
+        {
+            rank_algeb=san.charAt(0);
+            san=san.substring(1);
+            target_algeb=""+file_algeb+rank_algeb;
+            
+            m.from_algeb("a1"+target_algeb);
+            m.i1=m.i2;
+            if(turn==TURN_WHITE)
+            {
+                if(board[m.i2][m.j2+1]=='P')
+                {
+                    m.j1=m.j2+1;
+                }
+                else if(board[m.i2][m.j2+2]=='P')
+                {
+                    m.j1=m.j2+2;
+                }
+            }
+            else
+            {
+                if(board[m.i2][m.j2-1]=='p')
+                {
+                    m.j1=m.j2-1;
+                }
+                else if(board[m.i2][m.j2-2]=='p')
+                {
+                    m.j1=m.j2-2;
+                }
+            }
+        }
+        else if(piece=='P')
+        {
+            target_algeb=""+san.charAt(0)+san.charAt(1);
+            san=san.substring(2);
+            m.from_algeb(file_algeb+"1"+target_algeb);
+            if(turn==TURN_WHITE)
+            {
+                m.j1=m.j2+1;
+            }
+            else
+            {
+                m.j1=m.j2-1;
+            }
+        }
+        else
+        {
+            
+            // takes carries no information
+            san=san.replace("x","");
+                       
+            Pattern get_algeb = Pattern.compile("([a-z0-9]*)");
+            Matcher algeb_matcher = get_algeb.matcher(san);
+            
+            if(algeb_matcher.find())
+            {
+                algeb=algeb_matcher.group(0);
+                
+                if(algeb.length()==2)
+                {
+                    file_algeb=' ';
+                    rank_algeb=' ';
+                    
+                    san=san.substring(2);
+                    
+                    m.from_algeb("a1"+algeb);
+                }
+                else if (algeb.length()==3)
+                {
+                    
+                    target_algeb=san.substring(1,3);
+                    
+                    if((algeb.charAt(0)>='a')&&(algeb.charAt(0)<='z'))
+                    {
+                        file_algeb=algeb.charAt(0);
+                        rank_algeb=' ';
+                                                
+                        m.from_algeb(file_algeb+"1"+target_algeb);
+                    }
+                    else
+                    {
+                        rank_algeb=algeb.charAt(0);
+                        file_algeb=' ';
+                        
+                        m.from_algeb("a"+rank_algeb+target_algeb);
+                    }
+                    
+                    san=san.substring(3);
+                }
+                else
+                {
+                    
+                    m.from_algeb(algeb);
+                    
+                    san=san.substring(4);
+                }
+                
+                // disambiguation
+                
+                int piece_code=code_of(piece);
+                
+                int piece_type=piece_code&PIECE_TYPE;
+                
+                Boolean is_sliding=((piece_type&SLIDING)!=0);
+                
+                int san_ptr=move_table_ptr[m.i2][m.j2][piece_code];
+                
+                MoveDescriptor md;
+                
+                Boolean found=false;
+                
+                char search_piece=piece;
+                
+                if(turn==TURN_BLACK){search_piece=Character.toLowerCase(piece);}
+                
+                do
+                {
+                    md=move_table[san_ptr];
+                    
+                    char to_piece=board[md.to_i][md.to_j];
+                    
+                    if(to_piece==' ')
+                    {
+                        san_ptr++;
+                    }
+                    else
+                    {
+                        if(search_piece==to_piece)
+                        {
+                            Boolean file_match=true;
+                            Boolean rank_match=true;
+                            
+                            if(file_algeb!=' ')
+                            {
+                                file_match=(md.to_i==m.i1);
+                            }
+                            
+                            if(rank_algeb!=' ')
+                            {
+                                rank_match=(md.to_j==m.j1);
+                            }
+                            
+                            if(file_match&&rank_match)
+                            {
+                                found=true;
+                                m.i1=md.to_i;
+                                m.j1=md.to_j;
+                            }
+                        }
+                        
+                        if(is_sliding)
+                        {
+                            san_ptr=md.next_vector;
+                        }
+                        else
+                        {
+                            san_ptr++;
+                        }
+                    }
+                    
+                }while((!found)&&(!md.end_piece));
+                
+            }
+            
+        }
+        
+        return m;
+    }
+    
+    private void make_san_move(String san,Boolean show)
+    {
+        Move m=san_to_move(san);
+        
+        Boolean is_legal=is_move_legal(m);
+        
+        System.out.println(m.to_algeb()+" legal: "+is_legal);
+        
+        if(is_legal)
+        {
+            if(show)
+            {
+                make_move_show(m);
+            }
+            else
+            {
+                make_move(m);
+            }
+        }
+    }
+    
+    private void make_user_san_move()
+    {
+        make_san_move(san_text.getText(),true);
+        san_text.setText("");
+    }
     	
     public Board(Boolean set_with_gui)
     {
@@ -2234,6 +2465,21 @@ public class Board {
             vertical_box.getChildren().add(canvas_group);
 
             vertical_box.getChildren().add(fen_text);
+            
+            make_san_box.getChildren().add(new Label("  San move: "));
+            make_san_box.getChildren().add(san_text);
+            
+            Button make_san_button=new Button();
+                make_san_button.setText("Make san move");
+                make_san_button.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override public void handle(ActionEvent e) {
+                        make_user_san_move();
+                    }
+                });
+                
+            make_san_box.getChildren().add(make_san_button);
+            
+            vertical_box.getChildren().add(make_san_box);
 
             vertical_box.getChildren().add(controls_box);
             
