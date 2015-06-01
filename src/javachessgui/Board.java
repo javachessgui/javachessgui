@@ -36,11 +36,57 @@ import javax.swing.JOptionPane;
 import java.util.Arrays;
 import javafx.scene.control.Label;
 
+import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.stage.Stage;
+import javafx.util.Callback;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.table.*;
+ 
+import java.util.*;
+import java.awt.*;
+import java.awt.event.*;
+
+import java.awt.FlowLayout;
+
+import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.Event;
+import javafx.event.EventHandler;
+import javafx.scene.Scene;
+import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
+
+
 public class Board {
     
     public Game g=null;
     
     private Boolean with_gui;
+    
+    ListView<String> list = new ListView<String>();
     
     ////////////////////////////////////////////////////////
     // static members
@@ -1602,7 +1648,9 @@ public class Board {
         init_move_generator();
         
         String[] legal_move_list_buffer=new String[500];
+        
         for(int i=0;i<500;i++){legal_move_list_buffer[i]="z";}
+        
         String legal_move_list_as_string;
         int legal_move_list_buffer_cnt=0;
         
@@ -1628,7 +1676,15 @@ public class Board {
         }
         
         
+        
         Arrays.sort(legal_move_list_buffer);
+        for(int i=0;i<500;i++)
+            {
+                if(legal_move_list_buffer[i].equals("z"))
+                {
+                    legal_move_list_buffer[i]="";
+                }
+            }
         
         legal_move_list_as_string="";
         for(int i=0;i<legal_move_list_buffer_cnt;i++)
@@ -1636,7 +1692,26 @@ public class Board {
             legal_move_list_as_string+=legal_move_list_buffer[i]+"\n";
         }
         
-        legal_move_list.setText(legal_move_list_as_string);
+        //legal_move_list.setText(legal_move_list_as_string);
+        
+        ObservableList<String> items =FXCollections.observableArrayList (
+                legal_move_list_buffer);
+        
+        list.setItems(items);
+        
+        list.setOnMouseClicked(new EventHandler<Event>() {
+
+                    @Override
+                    public void handle(Event event) {
+                        ObservableList<String> selectedItems =  list.getSelectionModel().getSelectedItems();
+
+                        for(String s : selectedItems){
+                            make_san_move(s,true);
+                        }
+
+                    }
+
+                });
         
     }
     
@@ -2304,10 +2379,13 @@ public class Board {
             
         }
         
-        if(san.charAt(0)=='=')
+        if(san.length()>1)
         {
-            // promotion
-            m.prom_piece=san.charAt(1);
+            if(san.charAt(0)=='=')
+            {
+                // promotion
+                m.prom_piece=san.charAt(1);
+            }
         }
         
         return m;
@@ -2472,6 +2550,7 @@ public class Board {
 
             vertical_box.getChildren().add(fen_text);
             
+            /*
             make_san_box.getChildren().add(new Label("  San move: "));
             make_san_box.getChildren().add(san_text);
             
@@ -2485,13 +2564,17 @@ public class Board {
                 
             make_san_box.getChildren().add(make_san_button);
             
-            vertical_box.getChildren().add(make_san_box);
+            vertical_box.getChildren().add(make_san_box);*/
 
             vertical_box.getChildren().add(controls_box);
             
             main_box.getChildren().add(vertical_box);
             
-            main_box.getChildren().add(legal_move_list);
+            //main_box.getChildren().add(legal_move_list);
+            
+            //xxx
+            
+            main_box.getChildren().add(list);
 
             engine_text.setMaxHeight(100);
 
