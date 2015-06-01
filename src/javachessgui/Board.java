@@ -1745,6 +1745,12 @@ public class Board {
         int from_piece_type=from_piece_code&PIECE_TYPE;
         
         String algeb=m.to_algeb();
+        
+        if(algeb.equals("e1g1")){return "O-O";}
+        if(algeb.equals("e8g8")){return "O-O";}
+        if(algeb.equals("e1c1")){return "O-O-O";}
+        if(algeb.equals("e8c8")){return "O-O-O";}
+                
         char to_piece=board[m.i2][m.j2];
         String target_algeb=""+algeb.charAt(2)+algeb.charAt(3);
         
@@ -2173,9 +2179,38 @@ public class Board {
     
     private Move san_to_move(String san)
     {
+        
         Move m=new Move();
         
         m.from_algeb("a1a1");
+        
+        if(san.equals("O-O"))
+        {
+            if(turn==TURN_WHITE)
+            {
+                m.from_algeb("e1g1");
+            }
+            else
+            {
+                m.from_algeb("e8g8");
+            }
+            return m;
+        }
+        
+        if(san.equals("O-O-U"))
+        {
+            if(turn==TURN_WHITE)
+            {
+                m.from_algeb("e1c1");
+            }
+            else
+            {
+                m.from_algeb("e8c8");
+            }
+            return m;
+        }
+        
+        if(san.length()<2){return m;}
         
         Move dummy=new Move();
         
@@ -2238,6 +2273,7 @@ public class Board {
         }
         else if(piece=='P')
         {
+            if(san.length()<2){return m;}
             target_algeb=""+san.charAt(0)+san.charAt(1);
             san=san.substring(2);
             m.from_algeb(file_algeb+"1"+target_algeb);
@@ -2299,7 +2335,14 @@ public class Board {
                     
                     m.from_algeb(algeb);
                     
-                    san=san.substring(4);
+                    if(san.length()>=4)
+                    {
+                        san=san.substring(4);
+                    }
+                    else
+                    {
+                        return m;
+                    }
                 }
                 
                 // disambiguation
@@ -2383,8 +2426,18 @@ public class Board {
         return m;
     }
     
+    public Boolean is_san_move_legal(String san)
+    {
+        
+        Move m=san_to_move(san);
+        
+        return is_move_legal(m);
+        
+    }
+    
     public void make_san_move(String san,Boolean show)
     {
+        
         Move m=san_to_move(san);
         
         Boolean is_legal=is_move_legal(m);

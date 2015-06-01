@@ -246,9 +246,9 @@ public class Game {
         private void set_from_pgn_lines()
         {
             
-            //move_ptr=0;
+            move_ptr=0;
             
-            //initial_position="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            initial_position="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
             
             int line_cnt=0;
             
@@ -289,12 +289,38 @@ public class Game {
             String body="";
             while(line_cnt<pgn_lines.length)
             {
-                body+=pgn_lines[line_cnt++]+" ";
+                String line=pgn_lines[line_cnt++];
+                if(line.length()<2)
+                {
+                    break;
+                }
+                body+=line+" ";
             }
             
             System.out.println("body: "+body);
             
+            MyTokenizer t=new MyTokenizer(body);
             
+            String token;
+            
+            b.reset();
+            
+            while((token=t.get_token())!=null)
+            {
+                System.out.println("token: "+token);
+                
+                if(b.is_san_move_legal(token))
+                {
+                    b.make_san_move(token, false);
+                    String fen_after=b.report_fen();
+                    add_move(token,fen_after);
+                    
+                    System.out.println("san: "+token+" "+fen_after);
+                }
+                
+            }
+            
+            b.drawBoard();
             
         }
         
