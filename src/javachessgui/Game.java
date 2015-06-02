@@ -19,6 +19,7 @@ import javafx.event.Event;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 
 public class Game {
@@ -368,6 +369,60 @@ public class Game {
             
         }
         
+        private EventHandler<MouseEvent> mouseHandler = new EventHandler<MouseEvent>() {
+ 
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+
+                int x=(int)mouseEvent.getX();
+                int y=(int)mouseEvent.getY();
+                
+                String type=mouseEvent.getEventType().toString();
+
+                if(type=="MOUSE_CLICKED")
+                {
+                    //System.out.println("Mouse clicked over pgn text at x="+x+" y="+y);
+                    
+                    //System.out.println("caret position: "+pgn_text.getCaretPosition());
+                    
+                    int click_index=pgn_text.getCaretPosition();
+                            
+                    for(int i=0;i<move_ptr;i++)
+                    {
+                        int move_index=move_indices[i];
+                        if(click_index<move_index)
+                        {
+                            game_ptr=i;
+                            
+                            String pos=initial_position;
+                            if(game_ptr>0){pos=positions[game_ptr-1];}
+                                                        
+                            b.set_from_fen_inner(pos,false);
+                            b.drawBoard();
+                            
+                            update_game();
+                            
+                            return;
+                        }
+                    }
+                    
+                    if(move_ptr>0)
+                    {
+                        game_ptr=move_ptr;
+                            
+                        String pos=positions[game_ptr-1];
+
+                        b.set_from_fen_inner(pos,false);
+                        b.drawBoard();
+
+                        update_game();
+                    }
+                }
+
+            }
+        
+        };
+        
         public Game(Stage set_s,Board set_b)
         {
             
@@ -478,6 +533,9 @@ public class Game {
             vertical_box.getChildren().add(save_pgn_box);
             
             pgn_text.setWrapText(true);
+            
+            pgn_text.setOnMouseClicked(mouseHandler);
+            
             vertical_box.getChildren().add(pgn_text);
             
             list.setOnMouseClicked(new EventHandler<Event>() {
