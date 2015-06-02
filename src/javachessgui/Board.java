@@ -960,10 +960,13 @@ public class Board {
 
                     //System.out.println("r "+color_r+" g "+color_g+" b "+color_b);
 
-                    engine_gc.setStroke(score_color);
-                    engine_gc.setLineWidth(10);
-                    engine_gc.strokeRect(0, 0, board_size, board_size);
-
+                    if(engine_running)
+                    {
+                        engine_gc.setStroke(score_color);
+                        engine_gc.setLineWidth(10);
+                        engine_gc.strokeRect(0, 0, board_size, board_size);
+                        
+                    }
 
                     engine_gc.setStroke(engine_color);
                     engine_gc.setLineWidth(3);
