@@ -534,6 +534,8 @@ public class Game {
             
             pgn_text.setWrapText(true);
             
+            pgn_text.setStyle("-fx-display-caret: false;");
+            
             pgn_text.setOnMouseClicked(mouseHandler);
             
             vertical_box.getChildren().add(pgn_text);
