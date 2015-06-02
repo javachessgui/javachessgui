@@ -539,6 +539,9 @@ public class Board {
         
         ////////////////////////////////////////////
         // read config
+        MyFile config_txt=new MyFile("c:\\temp\\config.txt");
+        config_txt.content="engine=c:\\unzip\\chessgui\\uciengine.exe";
+        config_txt.write_content();
         
         uci_engine_path="";
         

@@ -8,6 +8,10 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 public class MyFile {
    
     final static int MAX_LINES=10000;
@@ -17,6 +21,19 @@ public class MyFile {
     public String[] lines=new String[MAX_LINES];
     
     public String content="";
+    
+    public void write_content() {
+
+        try
+        {
+            Files.write(Paths.get(path), content.getBytes());
+        }
+        catch(IOException ex)
+        {
+
+        }
+        
+    }
     
     public String[] read_lines()
     {

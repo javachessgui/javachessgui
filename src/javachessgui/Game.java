@@ -19,6 +19,8 @@ import javafx.scene.control.TextArea;
 
 public class Game {
     
+        private String pgn;
+    
         String initial_dir="";
     
         ListView<String> list = new ListView<String>();
@@ -201,7 +203,6 @@ public class Game {
                         
         }
         
-        private String pgn;
         public String calc_pgn()
         {
             Board dummy=new Board(false);
@@ -360,11 +361,45 @@ public class Game {
                 
             });
             
+            Button save_pgn_button=new Button();
+            save_pgn_button.setText("Save to PGN");
+            
+            save_pgn_button.setOnAction(new EventHandler<ActionEvent>() {
+                    
+                @Override public void handle(ActionEvent e) {
+                    
+                    if(initial_dir!="")
+                    {
+                        File dir=new File(initial_dir);
+
+                        f.setInitialDirectory(dir);
+                    }
+                                        
+                     File file = f.showOpenDialog(s);
+                     
+                     String path=file.getPath();
+                     
+                     initial_dir=path.substring(0,path.lastIndexOf(File.separator));
+                     
+                     MyFile my_file=new MyFile(path);
+                     
+                     calc_pgn();
+                     
+                     my_file.content=pgn;
+                     
+                     my_file.write_content();
+                     
+                    }
+                
+            });
+            
             vertical_box.getChildren().add(open_pgn_button);
             
             list.setMaxWidth(120);
             
             vertical_box.getChildren().add(list);
+            
+            vertical_box.getChildren().add(save_pgn_button);
             
             vertical_box.getChildren().add(pgn_text);
             
