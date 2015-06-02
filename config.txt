@@ -1,1 +1,2 @@
 engine=c:\unzip\chessgui\uciengine.exe
+initial_dir=C:\ATemp

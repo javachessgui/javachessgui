@@ -423,6 +423,19 @@ public class Game {
         
         };
         
+        private void look_for_initial_dir()
+        {
+            if(initial_dir.equals(""))
+            {
+                MyFile config=new MyFile("config.txt");
+                String result=config.get_field("initial_dir");
+                if(result!=null)
+                {
+                    initial_dir=result;
+                }
+            }
+        }
+        
         public Game(Stage set_s,Board set_b)
         {
             
@@ -436,6 +449,7 @@ public class Game {
                     
                 @Override public void handle(ActionEvent e) {
                     
+                    look_for_initial_dir();
                     if(initial_dir!="")
                     {
                         File dir=new File(initial_dir);
@@ -450,6 +464,9 @@ public class Game {
                      pgn_name_text.setText(path);
                      
                      initial_dir=path.substring(0,path.lastIndexOf(File.separator));
+                     
+                     MyFile config=new MyFile("config.txt");
+                     config.set_field("initial_dir",initial_dir);
                      
                      MyFile my_file=new MyFile(path);
                      
@@ -494,6 +511,7 @@ public class Game {
                     
                 @Override public void handle(ActionEvent e) {
                     
+                    look_for_initial_dir();
                     if(initial_dir!="")
                     {
                         File dir=new File(initial_dir);

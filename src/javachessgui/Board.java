@@ -539,82 +539,17 @@ public class Board {
         
         ////////////////////////////////////////////
         // read config
-        MyFile config_txt=new MyFile("c:\\temp\\config.txt");
-        config_txt.content="engine=c:\\unzip\\chessgui\\uciengine.exe";
-        config_txt.write_content();
-        
+                
         uci_engine_path="";
         
-        File f = new File("config.txt");
-        if(f.exists())
-        {
-            FileReader fr=null;
-            try {
-               fr=new FileReader("config.txt");
-               } catch(IOException ex) {
-               
-               }
-            
-            BufferedReader br=new BufferedReader(fr);
-            
-            String CurrentLine=null;
-            
-            do
-            {
-            try {
-               CurrentLine = br.readLine();
-               } catch(IOException ex) {
-               
-               }
-            
-            if(CurrentLine!=null)
-            {
-                Pattern get_pv = Pattern.compile("(engine=)(.*)");
-                Matcher pv_matcher = get_pv.matcher(CurrentLine);
-
-                if (pv_matcher.find( )) {
-                   uci_engine_path=pv_matcher.group(2);
-                   System.out.println("engine path: "+uci_engine_path);
-                }
-            }
-            
-            }while(CurrentLine!=null);
- 
-            
-        }
-        else
-        {
-            try {
-               f.createNewFile();
-               } catch(IOException ex) {
-               
-               }
-            
-            FileWriter fw=null;
-            try {
-               fw = new FileWriter(f.getAbsoluteFile());
-               } catch(IOException ex) {
-               
-               }
-            
-            BufferedWriter bw = new BufferedWriter(fw);
-                     
-            try {
-               bw.write("");
-               } catch(IOException ex) {
-               
-               }
-            
-            try {
-               bw.close();
-               } catch(IOException ex) {
-               
-               }
-            
+        MyFile config=new MyFile("config.txt");
         
-        }
+        String result=config.get_field("engine");
         
-        //uci_engine_path="";    
+        if(result!=null)
+        {
+            uci_engine_path=result;
+        }
         
         ////////////////////////////////////////////
         
@@ -2146,10 +2081,13 @@ public class Board {
     
     public void stop_engine_process()
     {
-        engine_read_thread.interrupt();
-        engine_write_thread.interrupt();
-        
-        uci_engine_process.destroy();
+        if(!uci_engine_path.equals(""))
+        {
+            engine_read_thread.interrupt();
+            engine_write_thread.interrupt();
+
+            uci_engine_process.destroy();
+        }
     }
     
     private void go_infinite()

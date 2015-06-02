@@ -22,6 +22,54 @@ public class MyFile {
     
     public String content="";
     
+    public int num_lines=0;
+    
+    public String calc_content()
+    {
+        content="";
+        
+        for(int i=0;i<num_lines;i++)
+        {
+            content+=lines[i]+"\n";
+        }
+        
+        return content;
+    }
+    
+    public String set(String key,String value)
+    {
+        for(int i=0;i<num_lines;i++)
+        {
+            
+            String line=lines[i];
+        
+            Pattern get_key = Pattern.compile("^"+key+"=(.*)");
+            Matcher get_key_matcher = get_key.matcher(line);
+
+                if (get_key_matcher.find( )) {
+                   if(value==null)
+                   {
+                       return(get_key_matcher.group(1));
+                   }
+                   lines[i]=key+"="+value;
+                   return value;
+                }
+        }
+        
+        if(value==null)
+        {
+            return null;
+        }
+        
+        if(num_lines<MAX_LINES)
+        {
+            lines[num_lines++]=key+"="+value;
+            return value;
+        }
+        
+        return null;
+    }
+    
     public void write_content() {
 
         try
@@ -37,6 +85,8 @@ public class MyFile {
     
     public String[] read_lines()
     {
+        
+        num_lines=0;
         
         int cnt=0;
         
@@ -76,12 +126,38 @@ public class MyFile {
             
             if(cnt==0){return null;}
             
+            num_lines=cnt;
+            
             return Arrays.copyOfRange(lines, 0, cnt);
             
         }
         
         return null;
         
+    }
+    
+    public String set_field(String key,String value)
+    {
+        read_lines();
+        String result=set(key,value);
+        if(result!=null)
+        {
+            calc_content();
+            write_content();
+            return value;
+        }
+        return null;
+    }
+    
+    public String get_field(String key)
+    {
+        read_lines();
+        String result=set(key,null);
+        if(result!=null)
+        {
+            return result;
+        }
+        return null;
     }
     
     
