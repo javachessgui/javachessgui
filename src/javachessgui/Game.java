@@ -72,7 +72,7 @@ public class Game {
             
             if(game_ptr<move_ptr)
             {
-                game_ptr=move_ptr;
+                move_ptr=game_ptr;
             }
             
             if(move_ptr>=MAX_MOVES)
@@ -341,7 +341,11 @@ public class Game {
                 
             }
             
+            game_ptr=move_ptr;
+            
             b.drawBoard();
+            
+            update_game();
             
         }
         
