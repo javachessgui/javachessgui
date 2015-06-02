@@ -2084,17 +2084,29 @@ public class Board {
         if(!uci_engine_path.equals(""))
         {
             engine_read_thread.interrupt();
-            engine_write_thread.interrupt();
+            //engine_write_thread.interrupt();
 
             uci_engine_process.destroy();
         }
     }
     
+    private void issue_command(String command)
+    {
+        try {
+                        
+                engine_out.write(command.getBytes());
+                engine_out.flush();
+
+                } catch(IOException ex) {
+
+                }
+    }
+    
     private void go_infinite()
     {
         String fen=report_fen();
-        runnable_engine_write_thread.command=
-                "position fen "+fen+"\ngo infinite\n";
+        //runnable_engine_write_thread.command="position fen "+fen+"\ngo infinite\n";
+        issue_command("position fen "+fen+"\ngo infinite\n");
         engine_running=true;
     }
     
@@ -2103,8 +2115,8 @@ public class Board {
         
         if(engine_running)
         {
-            runnable_engine_write_thread.command=
-                                    "stop\n";
+            //runnable_engine_write_thread.command="stop\n";
+            issue_command("stop\n");
 
             System.out.println("waiting for engine to stop");
 
@@ -2648,14 +2660,16 @@ public class Board {
                 runnable_engine_read_thread.b=this;
                 engine_read_thread=new Thread(runnable_engine_read_thread);
 
+                /*
                 runnable_engine_write_thread=new MyRunnable();
                 runnable_engine_write_thread.kind="engine_write";
                 runnable_engine_write_thread.std_out=engine_out;
                 runnable_engine_write_thread.command="";
                 engine_write_thread=new Thread(runnable_engine_write_thread);
+                */
 
                 engine_read_thread.start();
-                engine_write_thread.start();
+                //engine_write_thread.start();
 
             }
             
