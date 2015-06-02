@@ -25,7 +25,7 @@ public class Game {
     
         public HBox save_pgn_box=new HBox(2);
     
-        private TextField pgn_name_text = new TextField ();
+        private TextField pgn_name_text = new TextField();
     
         private String pgn;
     
@@ -51,6 +51,9 @@ public class Game {
         private String[] moves=new String[MAX_MOVES];
         public String initial_position;
         private String[] positions=new String[MAX_MOVES];
+        
+        int move_indices[]=new int[MAX_MOVES];
+        int start_fen_end_index=0;
         
         private int move_ptr=0;
         
@@ -208,6 +211,18 @@ public class Game {
             list.scrollTo(game_ptr);
             
             pgn_text.setText(calc_pgn());
+            
+            if(game_ptr>0)
+            {
+                
+                pgn_text.positionCaret(move_indices[game_ptr-1]);
+                pgn_text.selectNextWord();
+
+            }
+            else
+            {
+                pgn_text.selectRange(0, start_fen_end_index);
+            }
                         
         }
         
@@ -221,6 +236,7 @@ public class Game {
             int turn=dummy.turn;
             
             pgn="[StartFen \""+initial_position+"\"]\n";
+            start_fen_end_index=pgn.length()-1;
             pgn+="[Flip \""+b.flip+"\"]\n";
             
             pgn+="\n";
@@ -234,6 +250,8 @@ public class Game {
                     pgn+="... ";
                 }
                 
+                move_indices[0]=pgn.length();
+                
                 pgn+=moves[0]+" ";
             }
             
@@ -246,6 +264,7 @@ public class Game {
                     fullmove_number++;
                     pgn+=fullmove_number+". ";
                 }
+                move_indices[i]=pgn.length();
                 pgn+=moves[i]+" ";
             }
             
@@ -475,6 +494,8 @@ public class Game {
                             
                             b.set_from_fen_inner(pos,false);
                             b.drawBoard();
+                            
+                            update_game();
 
                     }
 
