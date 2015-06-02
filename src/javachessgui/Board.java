@@ -901,6 +901,11 @@ public class Board {
                         engine_gc.setLineWidth(10);
                         engine_gc.strokeRect(0, 0, board_size, board_size);
                         
+                        engine_gc.setFont(new Font("Time New Roman Bold",80));
+                        engine_gc.setLineWidth(4);
+                        engine_gc.setStroke(Color.rgb(180,180,0));
+                        engine_gc.strokeText((score_numerical>0?"+":"")+score_numerical,board_size/2-40,board_size/2+40);
+                        
                     }
 
                     engine_gc.setStroke(engine_color);
