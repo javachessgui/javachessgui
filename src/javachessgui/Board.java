@@ -2004,7 +2004,7 @@ public class Board {
             //System.out.println(type + " x " + x + " y " + y);
             //System.out.println("i "+gc_i(x)+" j "+gc_j(y));
             
-            if(type=="MOUSE_RELEASED")
+            if(type.equals("MOUSE_RELEASED"))
             {
                 
                 if(is_drag_going)
@@ -2067,7 +2067,7 @@ public class Board {
                 
             }
             
-            if(type=="MOUSE_DRAGGED")
+            if(type.equals("MOUSE_DRAGGED"))
             {
                 
                 if(is_drag_going)

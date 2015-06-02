@@ -379,7 +379,7 @@ public class Game {
                 
                 String type=mouseEvent.getEventType().toString();
 
-                if(type=="MOUSE_CLICKED")
+                if(type.equals("MOUSE_CLICKED"))
                 {
                     //System.out.println("Mouse clicked over pgn text at x="+x+" y="+y);
                     
