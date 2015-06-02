@@ -2204,7 +2204,7 @@ public class Board {
             return m;
         }
         
-        if(san.equals("O-O-U"))
+        if(san.equals("O-O-O"))
         {
             if(turn==TURN_WHITE)
             {
