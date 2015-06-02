@@ -11,6 +11,8 @@ import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
@@ -182,7 +184,7 @@ public class Game {
             }
         }
         
-        private void update_game()
+        public void update_game()
         {
             
             String[] game_buffer=new String[MAX_MOVES+1];
@@ -218,9 +220,10 @@ public class Game {
             int fullmove_number=dummy.fullmove_number;
             int turn=dummy.turn;
             
-            pgn="[StartFen \""+initial_position+"\"]";
+            pgn="[StartFen \""+initial_position+"\"]\n";
+            pgn+="[Flip \""+b.flip+"\"]\n";
             
-            pgn+="\n\n";
+            pgn+="\n";
             
             if(move_ptr>0)
             {
@@ -283,6 +286,17 @@ public class Game {
                         else
                         {
                             //System.out.println("header "+line);
+                            Pattern get_flip = Pattern.compile("(Flip .true)");
+                            Matcher flip_matcher = get_flip.matcher(line);
+            
+                            if(flip_matcher.find())
+                            {
+                                b.flip=true;
+                            }
+                            else
+                            {
+                                b.flip=false;
+                            }
                         }
                     }
                 }

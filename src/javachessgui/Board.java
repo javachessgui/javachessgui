@@ -127,7 +127,7 @@ public class Board {
     private char[][] board=new char[8][8];
     private char[][] fonts=new char[8][8];
     
-    private Boolean flip;
+    public Boolean flip;
     ////////////////////////////////////////////////////////
     
     ////////////////////////////////////////////////////////
@@ -1352,6 +1352,7 @@ public class Board {
     {
         flip=!flip;
         drawBoard();
+        g.update_game();
     }
     
     private void make_move(Move m)
