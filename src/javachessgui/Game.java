@@ -454,6 +454,7 @@ public class Game {
             
             vertical_box.getChildren().add(save_pgn_box);
             
+            pgn_text.setWrapText(true);
             vertical_box.getChildren().add(pgn_text);
             
             list.setOnMouseClicked(new EventHandler<Event>() {
