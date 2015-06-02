@@ -16,8 +16,14 @@ import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
 
 public class Game {
+    
+        public HBox save_pgn_box=new HBox(2);
+    
+        private TextField pgn_name_text = new TextField ();
     
         private String pgn;
     
@@ -349,6 +355,8 @@ public class Game {
                      
                      String path=file.getPath();
                      
+                     pgn_name_text.setText(path);
+                     
                      initial_dir=path.substring(0,path.lastIndexOf(File.separator));
                      
                      MyFile my_file=new MyFile(path);
@@ -361,10 +369,36 @@ public class Game {
                 
             });
             
-            Button save_pgn_button=new Button();
-            save_pgn_button.setText("Save to PGN");
             
-            save_pgn_button.setOnAction(new EventHandler<ActionEvent>() {
+            Button save_as_pgn_button=new Button();
+            save_as_pgn_button.setText("Save as: ");
+            
+            save_as_pgn_button.setOnAction(new EventHandler<ActionEvent>() {
+                    
+                @Override public void handle(ActionEvent e) {
+                    
+                    String path=pgn_name_text.getText();
+                    
+                    if(path.length()>0)
+                    {
+                     
+                     MyFile my_file=new MyFile(path);
+                     
+                     calc_pgn();
+                     
+                     my_file.content=pgn;
+                     
+                     my_file.write_content();
+                     
+                    }
+                }
+                
+            });
+            
+            Button save_to_pgn_button=new Button();
+            save_to_pgn_button.setText("Save to PGN");
+            
+            save_to_pgn_button.setOnAction(new EventHandler<ActionEvent>() {
                     
                 @Override public void handle(ActionEvent e) {
                     
@@ -399,7 +433,12 @@ public class Game {
             
             vertical_box.getChildren().add(list);
             
-            vertical_box.getChildren().add(save_pgn_button);
+            save_pgn_box.getChildren().add(save_as_pgn_button);
+            pgn_name_text.setMaxWidth(300);
+            save_pgn_box.getChildren().add(pgn_name_text);
+            save_pgn_box.getChildren().add(save_to_pgn_button);
+            
+            vertical_box.getChildren().add(save_pgn_box);
             
             vertical_box.getChildren().add(pgn_text);
             
