@@ -14,6 +14,8 @@ public class Javachessgui extends Application {
         init_app();
 
         primaryStage.setTitle("Chess GUI");
+        primaryStage.setX(0);
+        primaryStage.setY(0);
 
         Group root = new Group();
 

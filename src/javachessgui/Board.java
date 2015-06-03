@@ -908,7 +908,7 @@ public class Board {
                         
                     }
 
-                    engine_gc.setStroke(engine_color);
+                    engine_gc.setStroke(score_color);
                     engine_gc.setLineWidth(3);
                     engine_gc.strokeLine(from_x, from_y, to_x, to_y);
                     engine_gc.setFill(score_color);
