@@ -943,6 +943,7 @@ public class Board {
         }
     }
     
+    private String uci_puff="";
     public void consume_engine_out(String uci)
     {
         
@@ -951,12 +952,14 @@ public class Board {
         if(engine_intro)
         {
             
+            uci_puff+=uci;
+            
             Platform.runLater(new Runnable()
             {
                 
                 public void run()
                 {
-                    engine_text.setText(engine_text.getText()+uci);
+                    engine_text.setText(uci_puff);
                                                 
                     engine_text.setStyle("-fx-text-fill: #000000;");
                 }
@@ -966,6 +969,9 @@ public class Board {
             return;
             
         }
+        
+        uci=uci.replaceAll("[\\r\\n]*","");
+        uci+=" ";
         
         Pattern get_bestmove = Pattern.compile("(bestmove )(.*)");
         Matcher bestmove_matcher = get_bestmove.matcher(uci);
@@ -985,7 +991,7 @@ public class Board {
            bestmove_algeb=pv_parts[0];
         }
         
-        Pattern get_depth = Pattern.compile("(depth )([^ \n\r]+)");
+        Pattern get_depth = Pattern.compile("(depth )([^ ]+)");
         Matcher depth_matcher = get_depth.matcher(uci);
         
         if (depth_matcher.find( )) {
@@ -2471,6 +2477,7 @@ public class Board {
         stop_engine_process();
         
         engine_intro=true;
+        uci_puff="";
         
         engine_text.setText("");
         

@@ -457,22 +457,24 @@ public class Game {
                         f.setInitialDirectory(dir);
                     }
                                         
-                     File file = f.showOpenDialog(s);
-                     
-                     String path=file.getPath();
-                     
-                     pgn_name_text.setText(path);
-                     
-                     initial_dir=path.substring(0,path.lastIndexOf(File.separator));
-                     
-                     MyFile config=new MyFile("config.txt");
-                     config.set_field("initial_dir",initial_dir);
-                     
-                     MyFile my_file=new MyFile(path);
-                     
-                     pgn_lines=my_file.read_lines();
-                     
-                     set_from_pgn_lines();
+                    File file = f.showOpenDialog(s);
+                    
+                    if(file==null){return;}
+                    
+                    String path=file.getPath();
+                    
+                    pgn_name_text.setText(path);
+
+                    initial_dir=path.substring(0,path.lastIndexOf(File.separator));
+
+                    MyFile config=new MyFile("config.txt");
+                    config.set_field("initial_dir",initial_dir);
+
+                    MyFile my_file=new MyFile(path);
+
+                    pgn_lines=my_file.read_lines();
+
+                    set_from_pgn_lines();
                      
                     }
                 
@@ -491,13 +493,13 @@ public class Game {
                     if(path.length()>0)
                     {
                      
-                     MyFile my_file=new MyFile(path);
-                     
-                     calc_pgn();
-                     
-                     my_file.content=pgn;
-                     
-                     my_file.write_content();
+                        MyFile my_file=new MyFile(path);
+
+                        calc_pgn();
+
+                        my_file.content=pgn;
+
+                        my_file.write_content();
                      
                     }
                 }
@@ -520,6 +522,8 @@ public class Game {
                     }
                                         
                      File file = f.showOpenDialog(s);
+                     
+                     if(file==null){return;}
                      
                      String path=file.getPath();
                      

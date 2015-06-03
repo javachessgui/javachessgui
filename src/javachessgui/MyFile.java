@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import java.nio.file.Path;
+import java.nio.file.InvalidPathException;
+
 public class MyFile {
    
     final static int MAX_LINES=10000;
@@ -71,14 +74,31 @@ public class MyFile {
     }
     
     public void write_content() {
+        
+        Path p;
+            
+        try
+        {
+            p=Paths.get(path);
+        }
+        catch(InvalidPathException ex)
+        {
+            System.out.println("invalid path "+path);
+
+            return;
+        }
 
         try
         {
-            Files.write(Paths.get(path), content.getBytes());
+            
+            Files.write(p, content.getBytes());
+            
         }
         catch(IOException ex)
         {
-
+            
+            System.out.println("IO error writing file "+path);
+            
         }
         
     }
