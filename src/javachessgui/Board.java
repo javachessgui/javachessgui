@@ -76,10 +76,15 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.Pane;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 
 public class Board {
+    
+    public Stage s=new Stage();
+    
+    private FileChooser f=new FileChooser();
     
     public Game g=null;
     
@@ -87,9 +92,10 @@ public class Board {
     
     ListView<String> list = new ListView<String>();
     
+    private String uci_engine_path="";
+    
     ////////////////////////////////////////////////////////
     // static members
-    private static String uci_engine_path;
     
     private MyRunnable runnable_engine_read_thread;
     private MyRunnable runnable_engine_write_thread;
@@ -539,17 +545,6 @@ public class Board {
         
         ////////////////////////////////////////////
         // read config
-                
-        uci_engine_path="";
-        
-        MyFile config=new MyFile("config.txt");
-        
-        String result=config.get_field("engine");
-        
-        if(result!=null)
-        {
-            uci_engine_path=result;
-        }
         
         ////////////////////////////////////////////
         
@@ -954,10 +949,11 @@ public class Board {
            bestmove_algeb=pv_parts[0];
         }
         
-        Pattern get_depth = Pattern.compile("(depth )([^ ]+)");
+        Pattern get_depth = Pattern.compile("(depth )([^ \n\r]+)");
         Matcher depth_matcher = get_depth.matcher(uci);
         
         if (depth_matcher.find( )) {
+           
            depth=Integer.parseInt(depth_matcher.group(2));
         }
         
@@ -2086,13 +2082,17 @@ public class Board {
     
     public void stop_engine_process()
     {
-        if(!uci_engine_path.equals(""))
+        
+        if(!(uci_engine_path.equals("")))
         {
             engine_read_thread.interrupt();
             //engine_write_thread.interrupt();
 
             uci_engine_process.destroy();
+            
+            uci_engine_path="";
         }
+        
     }
     
     private void issue_command(String command)
@@ -2424,6 +2424,81 @@ public class Board {
         make_san_move(san_text.getText(),true);
         san_text.setText("");
     }
+    
+    private Boolean load_engine(String set_path)
+    {
+        
+        stop_engine_process();
+        
+        if(set_path==null)
+        {
+            uci_engine_path="";
+            
+            File file = f.showOpenDialog(s);
+            
+            if(file!=null)
+            {
+                uci_engine_path=file.getPath();
+            }
+        }
+        else if(set_path.equals(""))
+        {
+            uci_engine_path="";
+        
+            MyFile config=new MyFile("config.txt");
+        
+            String result=config.get_field("engine");
+        
+            if(result!=null)
+            {
+                uci_engine_path=result;
+            }
+        }
+        else
+        {
+            uci_engine_path=set_path;
+        }
+        
+        if(!(uci_engine_path.equals("")))
+        {
+
+            uci_engine_process_builder=new ProcessBuilder(uci_engine_path);
+
+            try {
+                   uci_engine_process=uci_engine_process_builder.start();
+                }
+            catch(IOException ex)
+                {
+                    System.out.println("error loading engine");
+                    uci_engine_path="";
+                    return false;
+                }
+
+            engine_in=uci_engine_process.getInputStream();
+            engine_out=uci_engine_process.getOutputStream();
+
+            runnable_engine_read_thread=new MyRunnable();
+            runnable_engine_read_thread.kind="engine_read";
+            runnable_engine_read_thread.std_in=engine_in;
+            runnable_engine_read_thread.b=this;
+            
+            engine_read_thread=new Thread(runnable_engine_read_thread);
+
+            engine_read_thread.start();
+            
+            MyFile config=new MyFile("config.txt");
+        
+            config.set_field("engine",uci_engine_path);
+            
+            System.out.println("engine loaded "+uci_engine_path);
+            
+            return true;
+
+        }
+        
+        return false;
+        
+    }
     	
     public Board(Boolean set_with_gui)
     {
@@ -2432,6 +2507,8 @@ public class Board {
         
         if(with_gui)
         {
+            
+            load_engine("");
             
             flip=false;
             
@@ -2501,41 +2578,48 @@ public class Board {
             controls_box.getChildren().add(report_fen_button);
             controls_box.getChildren().add(reset_button);
             controls_box.getChildren().add(delete_button);
+            
+            // engine controls
 
-            if(uci_engine_path!="")
-            {
-
-                Button stop_engine_process_button=new Button();
-                stop_engine_process_button.setText("Stop Engine Process");
-                stop_engine_process_button.setOnAction(new EventHandler<ActionEvent>() {
-                    @Override public void handle(ActionEvent e) {
-                        stop_engine_process();
-                    }
-                });
-
-                Button engine_go_button=new Button();
-                engine_go_button.setText("Go");
-                engine_go_button.setOnAction(new EventHandler<ActionEvent>() {
-                    @Override public void handle(ActionEvent e) {
-                        if(!engine_running)
+            Button engine_go_button=new Button();
+            engine_go_button.setText("Go");
+            engine_go_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    if(!engine_running)
+                    {
+                        if(!(uci_engine_path.equals("")))
                         {
                             go_infinite();
                         }
+                        else
+                        {
+                            System.out.println("go error no engine");
+                        }
                     }
-                });
+                }
+            });
 
-                Button engine_stop_button=new Button();
-                engine_stop_button.setText("Stop");
-                engine_stop_button.setOnAction(new EventHandler<ActionEvent>() {
-                    @Override public void handle(ActionEvent e) {
+            Button engine_stop_button=new Button();
+            engine_stop_button.setText("Stop");
+            engine_stop_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    if(!(uci_engine_path.equals("")))
+                        {
                         stop_engine();
+                        }
+                    else
+                    {
+                        System.out.println("stop error no engine");
                     }
-                });
+                }
+            });
 
-                Button engine_make_button=new Button();
-                engine_make_button.setText("Make");
-                engine_make_button.setOnAction(new EventHandler<ActionEvent>() {
-                    @Override public void handle(ActionEvent e) {
+            Button engine_make_button=new Button();
+            engine_make_button.setText("Make");
+            engine_make_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    if(!(uci_engine_path.equals("")))
+                    {
                         if((bestmove_algeb!="")&&(bestmove_algeb!=null))
                         {
 
@@ -2544,14 +2628,29 @@ public class Board {
 
                         }
                     }
-                });
+                    else
+                    {
+                        System.out.println("make error no engine");
+                    }
+                }
+            });
 
-                //controls_box.getChildren().add(stop_engine_process_button);
-                controls_box.getChildren().add(engine_go_button);
-                controls_box.getChildren().add(engine_stop_button);
-                controls_box.getChildren().add(engine_make_button);
+            Button load_engine_button=new Button();
+            load_engine_button.setText("Load engine");
+            load_engine_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
 
-            }
+                    load_engine(null);
+
+                }
+            });
+
+            //controls_box.getChildren().add(stop_engine_process_button);
+            controls_box.getChildren().add(engine_go_button);
+            controls_box.getChildren().add(engine_stop_button);
+            controls_box.getChildren().add(engine_make_button);
+            controls_box.getChildren().add(load_engine_button);
+
 
             vertical_box.getChildren().add(canvas_group);
             
@@ -2628,10 +2727,7 @@ public class Board {
 
             engine_text.setMaxHeight(100);
 
-            if(uci_engine_path!="")
-            {
-                vertical_box.getChildren().add(engine_text);
-            }
+            vertical_box.getChildren().add(engine_text);
 
             upper_canvas.setOnMouseDragged(mouseHandler);
             upper_canvas.setOnMouseClicked(mouseHandler);
@@ -2644,39 +2740,6 @@ public class Board {
             board_color=Color.rgb(255, 220, 220);
             piece_color=Color.rgb(0, 0, 0);
             engine_color=Color.rgb(0, 0, 255);
-            
-            if(uci_engine_path!="")
-            {
-
-                uci_engine_process_builder=new ProcessBuilder(uci_engine_path);
-
-                try {
-                       uci_engine_process=uci_engine_process_builder.start();
-                       } catch(IOException ex) {
-
-                       }
-
-                engine_in=uci_engine_process.getInputStream();
-                engine_out=uci_engine_process.getOutputStream();
-
-                runnable_engine_read_thread=new MyRunnable();
-                runnable_engine_read_thread.kind="engine_read";
-                runnable_engine_read_thread.std_in=engine_in;
-                runnable_engine_read_thread.b=this;
-                engine_read_thread=new Thread(runnable_engine_read_thread);
-
-                /*
-                runnable_engine_write_thread=new MyRunnable();
-                runnable_engine_write_thread.kind="engine_write";
-                runnable_engine_write_thread.std_out=engine_out;
-                runnable_engine_write_thread.command="";
-                engine_write_thread=new Thread(runnable_engine_write_thread);
-                */
-
-                engine_read_thread.start();
-                //engine_write_thread.start();
-
-            }
             
         }
         

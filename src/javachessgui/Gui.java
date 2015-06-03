@@ -24,6 +24,7 @@ public class Gui {
         s=set_s;
         
         b=new Board(true);
+        b.s=s;
         
         g=new Game(s,b);
         

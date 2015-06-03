@@ -2,13 +2,7 @@ Chess GUI in java
 
 Setup:
 
-- if you want to use a uci engine, there should be a config.txt file in the working directory of the program containing the line
-
-engine=[engine path]
-
-( if you run the jar in the dist folder, place the config.txt file the 'dist' folder )
-
-- if you don't want to use an engine clear this line from config.txt because a wrong path may cause the program to crash
+- if you want to use a uci engine or want to change the engine press the 'Load engine' button and select a valid uci engine ( the program remembers the selected engine on the next run )
 
 Usage:
 
