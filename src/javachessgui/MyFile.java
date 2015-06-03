@@ -73,7 +73,7 @@ public class MyFile {
         return null;
     }
     
-    public void write_content() {
+    public Boolean write_content() {
         
         Path p;
             
@@ -85,19 +85,21 @@ public class MyFile {
         {
             System.out.println("invalid path "+path);
 
-            return;
+            return false;
         }
 
         try
         {
             
             Files.write(p, content.getBytes());
+            return true;
             
         }
         catch(IOException ex)
         {
             
             System.out.println("IO error writing file "+path);
+            return false;
             
         }
         
@@ -154,6 +156,30 @@ public class MyFile {
         
         return null;
         
+    }
+    
+    public Boolean add_line(String line)
+    {
+        read_lines();
+        
+        for(int i=0;i<num_lines;i++)
+        {
+            if(lines[i].equals(line))
+            {
+                return true;
+            }
+        }
+        
+        if(num_lines>=MAX_LINES)
+        {
+            return false;
+        }
+        
+        lines[num_lines++]=line;
+        
+        calc_content();
+        
+        return write_content();
     }
     
     public String set_field(String key,String value)

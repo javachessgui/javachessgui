@@ -77,12 +77,18 @@ import javafx.scene.Scene;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
+
+
+import javafx.scene.*;
+import javafx.stage.*;
 
 
 public class Board {
     
+    
     public Stage s=new Stage();
+    
+    private String[] engine_list=new String[MyFile.MAX_LINES];
     
     private FileChooser f=new FileChooser();
     
@@ -2548,6 +2554,10 @@ public class Board {
             
             System.out.println("engine loaded "+uci_engine_path);
             
+            MyFile engine_list=new MyFile("engine_list.txt");
+            
+            engine_list.add_line(uci_engine_path);
+            
             engine_go_button.setDisable(false);
             engine_stop_button.setDisable(false);
             engine_make_button.setDisable(false);
@@ -2557,6 +2567,59 @@ public class Board {
         }
         
         return false;
+        
+    }
+    
+    private Stage select_engine_stage;
+    
+    private void select_engine()
+    {
+        
+        Group select_engine_group=new Group();
+        
+        ListView<String> list = new ListView<String>();
+        
+        list.setMinWidth(600);
+        
+        MyFile engine_list_file=new MyFile("engine_list.txt");
+        
+        engine_list=engine_list_file.read_lines();
+        
+        ObservableList<String> items =FXCollections.observableArrayList(
+                engine_list
+            );
+        
+        list.setItems(items);
+        
+        select_engine_group.getChildren().add(list);
+        
+        Scene select_engine_scene=new Scene(select_engine_group,600,400);
+        
+        select_engine_stage=new Stage();
+        
+        select_engine_stage.initModality(Modality.APPLICATION_MODAL);
+        select_engine_stage.setX(30);
+        select_engine_stage.setY(30);
+        select_engine_stage.setTitle("Select engine from the list");
+        select_engine_stage.setScene(select_engine_scene);
+        
+        list.setOnMouseClicked(new EventHandler<Event>() {
+
+                @Override
+                public void handle(Event event) {
+
+                    int selected =  list.getSelectionModel().getSelectedIndex();
+
+                    String path=engine_list[selected];
+                    
+                    load_engine(path);
+                    
+                    select_engine_stage.close();
+            }
+
+        });
+        
+        select_engine_stage.showAndWait();
         
     }
     	
@@ -2749,11 +2812,20 @@ public class Board {
                     make_move_show(null);
                 }
             });
+            
+            Button select_engine_button=new Button();
+            select_engine_button.setText("Select engine");
+            select_engine_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                 select_engine();
+                }
+            });
 
             game_controls_box.getChildren().add(to_begin_button);
             game_controls_box.getChildren().add(back_button);
             game_controls_box.getChildren().add(forward_button);
             game_controls_box.getChildren().add(to_end_button);
+            game_controls_box.getChildren().add(select_engine_button);
             
             vertical_box.getChildren().add(game_controls_box);
 
