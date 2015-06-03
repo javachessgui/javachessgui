@@ -2,7 +2,7 @@ Chess GUI in java
 
 Setup:
 
-- if you want to use a uci engine or want to change the engine press the 'Load engine' button and select a valid uci engine ( the program remembers the selected engine on the next run )
+- if you want to use a uci engine or want to change the engine press the 'Load engine' button and select a valid uci engine
 
 Usage:
 
