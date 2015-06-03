@@ -6,7 +6,7 @@ if you want to use a uci engine or want to change the engine press the 'Load eng
 
 Usage:
 
-to start the program,
+to run the program,
 
 - make sure that the latest version of Java is installed on your computer
 
