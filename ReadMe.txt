@@ -8,7 +8,9 @@ Usage:
 
 to start the program,
 
-in the 'dist' folder:
+- make sure that the latest version of Java is installed on your computer
+
+- then in the 'dist' folder:
 
 	- double click on javachessgui.jar
 
