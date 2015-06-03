@@ -973,7 +973,7 @@ public class Board {
         uci=uci.replaceAll("[\\r\\n]*","");
         uci+=" ";
         
-        Pattern get_bestmove = Pattern.compile("(bestmove )(.*)");
+        Pattern get_bestmove = Pattern.compile("(^bestmove )(.*)");
         Matcher bestmove_matcher = get_bestmove.matcher(uci);
         
         if (bestmove_matcher.find( )) {
