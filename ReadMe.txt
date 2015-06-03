@@ -1,4 +1,4 @@
-Chess GUI in java
+Chess GUI in Java
 
 Setup:
 
