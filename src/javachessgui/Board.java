@@ -94,6 +94,8 @@ public class Board {
     
     private String uci_engine_path="";
     
+    private Boolean engine_intro=true;
+    
     ////////////////////////////////////////////////////////
     // static members
     
@@ -820,6 +822,9 @@ public class Board {
     
     private void update_engine()
     {
+        
+        if(engine_intro){return;}
+        
         if((bestmove_algeb!="")&&(bestmove_algeb!=null))
         {
             
@@ -869,60 +874,68 @@ public class Board {
             
             Platform.runLater(new Runnable()
             {
-               public void run()
-               {
-                   engine_text.setFont(engine_font);
-            
-                    engine_text.setText(
-                            "depth "+depth+
-                            "\npv "+pv+
-                            "\nscore "+score_verbal+
-                            "\nscore numerical "+score_numerical+
-                            "\nbestmove "+bestmove_algeb
-                    );
-                    
-                    engine_text.setStyle("-fx-text-fill: rgb("
-                        +color_r+","+color_g+","+color_b
-                        +");"
-                    );
+                
+                public void run()
+                {
+                     
+                     engine_text.setText(
+                             "depth "+depth+
+                             "\npv "+pv+
+                             "\nscore "+score_verbal+
+                             "\nscore numerical "+score_numerical+
+                             "\nbestmove "+bestmove_algeb
+                     );
 
-                    engine_gc.clearRect(0,0,board_size,board_size);
+                     engine_text.setStyle("-fx-text-fill: rgb("
+                         +color_r+","+color_g+","+color_b
+                         +");"
+                             
+                     );
 
-                    //System.out.println("r "+color_r+" g "+color_g+" b "+color_b);
+                     engine_gc.clearRect(0,0,board_size,board_size);
 
-                    if(engine_running)
-                    {
-                        engine_gc.setStroke(score_color);
-                        engine_gc.setLineWidth(10);
-                        engine_gc.strokeRect(0, 0, board_size, board_size);
-                        
-                        engine_gc.setFont(new Font("Time New Roman Bold",80));
-                        engine_gc.setLineWidth(4);
-                        engine_gc.setStroke(Color.rgb(180,180,0));
-                        engine_gc.strokeText((score_numerical>0?"+":"")+score_numerical,board_size/2-40,board_size/2+40);
-                        
-                    }
+                     if(engine_running)
+                     {
+                         
+                         engine_gc.setStroke(score_color);
+                         engine_gc.setLineWidth(10);
+                         engine_gc.strokeRect(0, 0, board_size, board_size);
 
-                    engine_gc.setStroke(score_color);
-                    engine_gc.setLineWidth(3);
-                    engine_gc.strokeLine(from_x, from_y, to_x, to_y);
-                    engine_gc.setFill(score_color);
-                    
-                    engine_gc.fillOval(to_x-padding, to_y-padding, 2*padding, 2*padding);
-               }
+                         engine_gc.setFont(new Font("Time New Roman Bold",80));
+                         engine_gc.setLineWidth(4);
+                         engine_gc.setStroke(Color.rgb(180,180,0));
+                         engine_gc.strokeText((score_numerical>0?"+":"")+score_numerical,board_size/2-40,board_size/2+40);
+
+                     }
+
+                     engine_gc.setStroke(score_color);
+                     engine_gc.setLineWidth(3);
+                     engine_gc.strokeLine(from_x, from_y, to_x, to_y);
+                     engine_gc.setFill(score_color);
+
+                     engine_gc.fillOval(to_x-padding, to_y-padding, 2*padding, 2*padding);
+                     
+                }
+                
             });
             
         }
         else
         {
+            
             Platform.runLater(new Runnable()
             {
-               public void run()
-               {
-                engine_gc.clearRect(0,0,board_size,board_size);
-                engine_text.setText("");
-               }
+                
+                public void run()
+                {
+
+                    engine_gc.clearRect(0,0,board_size,board_size);
+                    engine_text.setText("");
+
+                }
+               
             });
+            
         }
     }
     
@@ -930,6 +943,25 @@ public class Board {
     {
         
         System.out.println("uci "+uci);
+        
+        if(engine_intro)
+        {
+            
+            Platform.runLater(new Runnable()
+            {
+                
+                public void run()
+                {
+                    engine_text.setText(engine_text.getText()+uci);
+                    
+                    engine_text.setStyle("-fx-text-fill: #000000;");
+                }
+               
+            });
+            
+            return;
+            
+        }
         
         Pattern get_bestmove = Pattern.compile("(bestmove )(.*)");
         Matcher bestmove_matcher = get_bestmove.matcher(uci);
@@ -980,7 +1012,6 @@ public class Board {
                    ;
         }
         
-
         update_engine();
         
     }
@@ -2109,6 +2140,7 @@ public class Board {
     
     private void go_infinite()
     {
+        engine_intro=false;
         String fen=report_fen();
         //runnable_engine_write_thread.command="position fen "+fen+"\ngo infinite\n";
         issue_command("position fen "+fen+"\ngo infinite\n");
@@ -2430,6 +2462,10 @@ public class Board {
         
         stop_engine_process();
         
+        engine_intro=true;
+        
+        engine_text.setText("");
+        
         if(set_path==null)
         {
             uci_engine_path="";
@@ -2727,6 +2763,7 @@ public class Board {
 
             engine_text.setMaxHeight(100);
 
+            engine_text.setFont(engine_font);
             vertical_box.getChildren().add(engine_text);
 
             upper_canvas.setOnMouseDragged(mouseHandler);
