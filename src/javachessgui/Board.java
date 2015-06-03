@@ -934,7 +934,7 @@ public class Board {
     public void consume_engine_out(String uci)
     {
         
-        System.out.println("uci out "+uci);
+        System.out.println("uci "+uci);
         
         Pattern get_bestmove = Pattern.compile("(bestmove )(.*)");
         Matcher bestmove_matcher = get_bestmove.matcher(uci);
@@ -1991,7 +1991,7 @@ public class Board {
                         }
                         else
                         {
-                            System.out.println("Illegal move!");
+                            //System.out.println("Illegal move!");
                             drawBoard();
                             return;
                         }
@@ -2123,7 +2123,7 @@ public class Board {
             //runnable_engine_write_thread.command="stop\n";
             issue_command("stop\n");
 
-            System.out.println("waiting for engine to stop");
+            //System.out.println("waiting for engine to stop");
 
             while(engine_running){
                 try {
@@ -2132,7 +2132,7 @@ public class Board {
                             Thread.currentThread().interrupt();
                             }
 
-            System.out.println("engine stopped ok");
+            //System.out.println("engine stopped ok");
         }
             
         }
@@ -2404,7 +2404,7 @@ public class Board {
         
         Boolean is_legal=is_move_legal(m);
         
-        System.out.println(m.to_algeb()+" legal: "+is_legal);
+        //System.out.println(m.to_algeb()+" legal: "+is_legal);
         
         if(is_legal)
         {

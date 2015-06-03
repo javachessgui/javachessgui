@@ -338,7 +338,7 @@ public class Game {
                 body+=line+" ";
             }
             
-            System.out.println("body: "+body);
+            //System.out.println("body: "+body);
             
             MyTokenizer t=new MyTokenizer(body);
             
@@ -348,7 +348,7 @@ public class Game {
             
             while((token=t.get_token())!=null)
             {
-                System.out.println("token: "+token);
+                //System.out.println("token: "+token);
                 
                 if(b.is_san_move_legal(token))
                 {
@@ -356,7 +356,7 @@ public class Game {
                     String fen_after=b.report_fen();
                     add_move(token,fen_after);
                     
-                    System.out.println("san: "+token+" "+fen_after);
+                    //System.out.println("san: "+token+" "+fen_after);
                 }
                 
             }
