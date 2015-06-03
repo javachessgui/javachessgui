@@ -958,7 +958,9 @@ public class Board {
         if(engine_intro)
         {
             
-            uci_puff+=uci;
+            uci=uci.replaceAll("^info string ", "");
+            
+            uci_puff+=uci+"\n";
             
             Platform.runLater(new Runnable()
             {
