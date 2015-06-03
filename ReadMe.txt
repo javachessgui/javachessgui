@@ -10,7 +10,7 @@ to start the program,
 
 in the 'dist' folder:
 
-	- click on javachessgui.jar
+	- double click on javachessgui.jar
 
 or
 
