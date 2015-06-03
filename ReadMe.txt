@@ -14,4 +14,5 @@ in the 'dist' folder:
 
 or
 
-	- type: java -jar javachessgui.jar
+	- in a console window cd to the 'dist' directory
+	- then issue the command: 'java -jar javachessgui.jar'
