@@ -22,8 +22,12 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+
 public class Game {
     
+        public HBox clip_box=new HBox(2);
         public HBox save_pgn_box=new HBox(2);
     
         private TextField pgn_name_text = new TextField();
@@ -436,6 +440,8 @@ public class Game {
             }
         }
         
+        private Clipboard clip=Clipboard.getSystemClipboard();
+        
         public Game(Stage set_s,Board set_b)
         {
             
@@ -541,7 +547,60 @@ public class Game {
                 
             });
             
-            vertical_box.getChildren().add(open_pgn_button);
+            clip_box.getChildren().add(open_pgn_button);
+            
+            Button clip_to_fen_button=new Button();
+            clip_to_fen_button.setText("Clip->Fen");
+            clip_to_fen_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    String fen=clip.getString();
+                    if(fen!=null)
+                    {
+                        b.set_from_fen(fen);
+                        b.drawBoard();
+                    }
+                }
+            });
+            
+            Button fen_to_clip_button=new Button();
+            fen_to_clip_button.setText("Fen->Clip");
+            fen_to_clip_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    ClipboardContent content = new ClipboardContent();
+                    content.putString(b.report_fen());
+                    clip.setContent(content);
+                }
+            });
+            
+            Button clip_to_pgn_button=new Button();
+            clip_to_pgn_button.setText("Clip->PGN");
+            clip_to_pgn_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    String pgn=clip.getString();
+                    if(pgn!=null)
+                    {
+                        pgn_lines = pgn.split("\\r?\\n");
+                        set_from_pgn_lines();
+                    }
+                }
+            });
+            
+            Button pgn_to_clip_button=new Button();
+            pgn_to_clip_button.setText("PGN->Clip");
+            pgn_to_clip_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    ClipboardContent content = new ClipboardContent();
+                    content.putString(calc_pgn());
+                    clip.setContent(content);
+                }
+            });
+            
+            clip_box.getChildren().add(clip_to_fen_button);
+            clip_box.getChildren().add(fen_to_clip_button);
+            clip_box.getChildren().add(clip_to_pgn_button);
+            clip_box.getChildren().add(pgn_to_clip_button);
+            
+            vertical_box.getChildren().add(clip_box);
             
             list.setMaxWidth(120);
             
