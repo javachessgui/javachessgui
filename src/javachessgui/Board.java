@@ -2575,15 +2575,21 @@ public class Board {
     private void select_engine()
     {
         
+        MyFile engine_list_file=new MyFile("engine_list.txt");
+        
+        engine_list=engine_list_file.read_lines();
+        
+        if(engine_list==null)        
+        {
+            load_engine(null);
+            return;
+        }
+        
         Group select_engine_group=new Group();
         
         ListView<String> list = new ListView<String>();
         
         list.setMinWidth(600);
-        
-        MyFile engine_list_file=new MyFile("engine_list.txt");
-        
-        engine_list=engine_list_file.read_lines();
         
         ObservableList<String> items =FXCollections.observableArrayList(
                 engine_list
