@@ -96,6 +96,10 @@ public class Board {
     
     private Boolean engine_intro=true;
     
+    private Button engine_go_button;
+    private Button engine_stop_button;
+    private Button engine_make_button;
+    
     ////////////////////////////////////////////////////////
     // static members
     
@@ -953,7 +957,7 @@ public class Board {
                 public void run()
                 {
                     engine_text.setText(engine_text.getText()+uci);
-                    
+                                                
                     engine_text.setStyle("-fx-text-fill: #000000;");
                 }
                
@@ -2114,6 +2118,10 @@ public class Board {
     public void stop_engine_process()
     {
         
+        engine_go_button.setDisable(true);
+        engine_stop_button.setDisable(true);
+        engine_make_button.setDisable(true);
+        
         if(!(uci_engine_path.equals("")))
         {
             engine_read_thread.interrupt();
@@ -2507,9 +2515,14 @@ public class Board {
                 {
                     System.out.println("error loading engine");
                     uci_engine_path="";
+                    
+                    engine_text.setText("Error loading engine!");
+                    
+                    engine_text.setStyle("-fx-text-fill: #ff0000;");
+                    
                     return false;
                 }
-
+            
             engine_in=uci_engine_process.getInputStream();
             engine_out=uci_engine_process.getOutputStream();
 
@@ -2528,6 +2541,10 @@ public class Board {
             
             System.out.println("engine loaded "+uci_engine_path);
             
+            engine_go_button.setDisable(false);
+            engine_stop_button.setDisable(false);
+            engine_make_button.setDisable(false);
+            
             return true;
 
         }
@@ -2543,6 +2560,62 @@ public class Board {
         
         if(with_gui)
         {
+            
+            // engine controls
+
+            engine_go_button=new Button();
+            engine_go_button.setText("Go");
+            engine_go_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    if(!engine_running)
+                    {
+                        if(!(uci_engine_path.equals("")))
+                        {
+                            go_infinite();
+                        }
+                        else
+                        {
+                            System.out.println("go error no engine");
+                        }
+                    }
+                }
+            });
+
+            engine_stop_button=new Button();
+            engine_stop_button.setText("Stop");
+            engine_stop_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    if(!(uci_engine_path.equals("")))
+                        {
+                        stop_engine();
+                        }
+                    else
+                    {
+                        System.out.println("stop error no engine");
+                    }
+                }
+            });
+
+            engine_make_button=new Button();
+            engine_make_button.setText("Make");
+            engine_make_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    if(!(uci_engine_path.equals("")))
+                    {
+                        if((bestmove_algeb!="")&&(bestmove_algeb!=null))
+                        {
+
+                            bestmove.from_algeb(bestmove_algeb);
+                            make_move_show(bestmove);
+
+                        }
+                    }
+                    else
+                    {
+                        System.out.println("make error no engine");
+                    }
+                }
+            });
             
             load_engine("");
             
@@ -2615,62 +2688,6 @@ public class Board {
             controls_box.getChildren().add(reset_button);
             controls_box.getChildren().add(delete_button);
             
-            // engine controls
-
-            Button engine_go_button=new Button();
-            engine_go_button.setText("Go");
-            engine_go_button.setOnAction(new EventHandler<ActionEvent>() {
-                @Override public void handle(ActionEvent e) {
-                    if(!engine_running)
-                    {
-                        if(!(uci_engine_path.equals("")))
-                        {
-                            go_infinite();
-                        }
-                        else
-                        {
-                            System.out.println("go error no engine");
-                        }
-                    }
-                }
-            });
-
-            Button engine_stop_button=new Button();
-            engine_stop_button.setText("Stop");
-            engine_stop_button.setOnAction(new EventHandler<ActionEvent>() {
-                @Override public void handle(ActionEvent e) {
-                    if(!(uci_engine_path.equals("")))
-                        {
-                        stop_engine();
-                        }
-                    else
-                    {
-                        System.out.println("stop error no engine");
-                    }
-                }
-            });
-
-            Button engine_make_button=new Button();
-            engine_make_button.setText("Make");
-            engine_make_button.setOnAction(new EventHandler<ActionEvent>() {
-                @Override public void handle(ActionEvent e) {
-                    if(!(uci_engine_path.equals("")))
-                    {
-                        if((bestmove_algeb!="")&&(bestmove_algeb!=null))
-                        {
-
-                            bestmove.from_algeb(bestmove_algeb);
-                            make_move_show(bestmove);
-
-                        }
-                    }
-                    else
-                    {
-                        System.out.println("make error no engine");
-                    }
-                }
-            });
-
             Button load_engine_button=new Button();
             load_engine_button.setText("Load engine");
             load_engine_button.setOnAction(new EventHandler<ActionEvent>() {
