@@ -4,53 +4,62 @@ rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1
 		0
 		is_analyzed
 		false
-		count
-		2
 		notation
 		5
+		count
+		2
 	Nf6
 		eval
 		0
 		is_analyzed
 		false
-		count
-		2
 		notation
 		5
+		count
+		2
 rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 	b4
 		eval
 		0
 		is_analyzed
 		false
-		notation
-		1
 		count
+		1
+		notation
 		1
 	d4
 		eval
 		0
 		is_analyzed
 		false
-		count
-		3
 		notation
 		5
+		count
+		3
 	Nf3
 		eval
 		0
 		is_analyzed
 		false
-		count
-		5
 		notation
 		3
+		count
+		5
 	e4
 		eval
 		0
 		is_analyzed
 		false
-		count
-		12
 		notation
 		5
+		count
+		12
+	a4
+		eval
+		0
+		is_analyzed
+		false
+		count
+		1
+		notation
+		-1

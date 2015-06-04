@@ -215,7 +215,7 @@ public class Game {
                     pos.put(san,old_book_move.report_hash());
                 }
                 
-                book_file.from_hash(book);
+                //book_file.from_hash(book);
                 
             }
             
@@ -984,10 +984,19 @@ public class Game {
                 }
             });
             
+            Button save_book_button=new Button();
+            save_book_button.setText("Save Book");
+            save_book_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    book_file.from_hash(book);
+                }
+            });
+            
             clip_box.getChildren().add(clip_to_fen_button);
             clip_box.getChildren().add(fen_to_clip_button);
             clip_box.getChildren().add(clip_to_pgn_button);
             clip_box.getChildren().add(pgn_to_clip_button);
+            clip_box.getChildren().add(save_book_button);
             
             vertical_box.getChildren().add(clip_box);
             

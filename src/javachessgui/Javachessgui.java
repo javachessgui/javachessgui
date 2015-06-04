@@ -11,6 +11,10 @@ public class Javachessgui extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        
+        //Encode32 e=new Encode32();
+        
+        //System.out.println(e.encode("sjdlj öIOUHU^ˇ^[[đĐÖÍD=)D()Ö=(/D"));
                 
         init_app();
 
