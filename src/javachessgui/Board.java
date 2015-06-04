@@ -2411,6 +2411,20 @@ public class Board {
                                 found=true;
                                 m.i1=md.to_i;
                                 m.j1=md.to_j;
+                                
+                                // check for check
+                                
+                                Board dummy_check_test=new Board(false);
+            
+                                dummy_check_test.set_from_fen(report_fen());
+
+                                dummy_check_test.make_move(m);
+                                
+                                if(dummy_check_test.is_in_check(turn))
+                                {
+                                    found=false;
+                                }
+                                
                             }
                         }
                         
