@@ -11,6 +11,7 @@ import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Hashtable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javafx.collections.FXCollections;
@@ -25,7 +26,11 @@ import javafx.scene.layout.HBox;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 
+import java.util.Set;
+
 public class Game {
+    
+        private static Hashtable pgn_header_hash=new Hashtable();
     
         public HBox clip_box=new HBox(2);
         public HBox save_pgn_box=new HBox(2);
@@ -244,6 +249,18 @@ public class Game {
             start_fen_end_index=pgn.length()-1;
             pgn+="[Flip \""+b.flip+"\"]\n";
             
+            // add hash headers
+            
+            Set<String> keys = pgn_header_hash.keySet();
+            for(String key: keys)
+            {
+                String value=pgn_header_hash.get(key).toString();
+                if((!key.equals("StartFen"))&&(!key.equals("Flip")))
+                {
+                    pgn+="["+key+" \""+value+"\"]\n";
+                }
+            }
+            
             pgn+="\n";
             
             if(move_ptr>0)
@@ -281,6 +298,8 @@ public class Game {
         {
             
             move_ptr=0;
+            
+            pgn_header_hash.clear();
             
             initial_position="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
             
@@ -321,6 +340,21 @@ public class Game {
                             {
                                 b.flip=false;
                             }
+                                                        
+                            // parse header fields
+                            
+                            Pattern get_header = Pattern.compile("\\[([^ ]+) \"([^\\\"]+)\\\"");
+                            Matcher header_matcher = get_header.matcher(line);
+                            
+                            if(header_matcher.find())
+                            {
+                                String key=header_matcher.group(1);
+                                String value=header_matcher.group(2);
+                                //System.out.println("key "+key+" value "+value);
+                                
+                                pgn_header_hash.put(key,value);
+                            }
+                            
                         }
                     }
                 }
@@ -341,6 +375,9 @@ public class Game {
                 }
                 body+=line+" ";
             }
+            
+            // remove all comments, carriage return, line feed
+            body=body.replaceAll("\r|\n|\\{[^\\}]*\\}","");
             
             //System.out.println("body: "+body);
             
