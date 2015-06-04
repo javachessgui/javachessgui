@@ -28,11 +28,89 @@ import javafx.scene.input.ClipboardContent;
 
 import java.util.Set;
 
+import javafx.scene.text.Font;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;   
+import javafx.scene.Group;
+import javafx.scene.Scene;
+
+import javafx.scene.control.cell.ComboBoxListCell;
+
+class BookMoveComparator implements Comparator<BookMove>
+{
+    public int compare(BookMove b1, BookMove b2)
+    {
+        return b2.notation-b1.notation;
+    }
+}
+
+class BookMove
+{
+    
+    
+    
+    public String san;
+    public int notation;
+    public Boolean is_analyzed;
+    public int eval;
+    public int count;
+    
+    public Hashtable report_hash()
+    {
+        Hashtable hash=new Hashtable();
+        hash.put("notation", ""+notation);
+        hash.put("is_analyzed", ""+is_analyzed);
+        hash.put("eval", ""+eval);
+        hash.put("count", ""+count);
+        
+        return hash;
+    }
+    
+    public void set_from_hash(Hashtable hash)
+    {
+        if(hash.get("notation")!=null)
+        {
+            notation=Integer.parseInt(hash.get("notation").toString());
+        }
+        
+        if(hash.get("analyzed")!=null)
+        {
+            is_analyzed=hash.get("analyzed").toString().equals("true");
+        }
+        
+        if(hash.get("eval")!=null)
+        {
+            eval=Integer.parseInt(hash.get("eval").toString());
+        }
+        
+        if(hash.get("count")!=null)
+        {
+            count=Integer.parseInt(hash.get("count").toString());
+        }
+        
+    }
+    
+    public BookMove(String set_san)
+    {
+        san=set_san;
+        notation=-1;
+        is_analyzed=false;
+        eval=0;
+        count=0;
+    }
+}
+
 public class Game {
     
-        private static Hashtable pgn_header_hash=new Hashtable();
+           
+        List<BookMove> book_list;
     
+        private Hashtable pgn_header_hash=new Hashtable();
+            
         public HBox clip_box=new HBox(2);
+        public HBox book_box=new HBox(2);
         public HBox save_pgn_box=new HBox(2);
     
         private TextField pgn_name_text = new TextField();
@@ -42,6 +120,7 @@ public class Game {
         String initial_dir="";
     
         ListView<String> list = new ListView<String>();
+        ListView blist = new ListView();
         
         TextArea pgn_text=new TextArea();
     
@@ -72,7 +151,11 @@ public class Game {
         public void reset(String initial_fen)
         {
             
+            sel_book_move=-1;
+            
             move_ptr=0;
+            
+            game_ptr=0;
             
             initial_position=initial_fen;
             
@@ -82,6 +165,8 @@ public class Game {
         
         public void add_move(String san,String fen_after)
         {
+            
+            sel_book_move=-1;
             
             if(game_ptr<move_ptr)
             {
@@ -95,9 +180,42 @@ public class Game {
             else
             {
                 
+                String fen_before=initial_position;
+                if(move_ptr>0)
+                {
+                    fen_before=positions[move_ptr-1];
+                }
                 positions[move_ptr]=fen_after;
                 moves[move_ptr++]=san;
                 game_ptr++;
+                
+                Object pos_obj=book.get(fen_before);
+                Hashtable pos;
+                if(pos_obj==null)
+                {
+                    pos=new Hashtable();
+                    book.put(fen_before,pos);
+                }
+                else
+                {
+                    pos=(Hashtable)pos_obj;
+                }
+                
+                if(pos.get(san)==null)
+                {
+                    BookMove new_book_move=new BookMove(san);
+                    new_book_move.count=1;
+                    pos.put(san,new_book_move.report_hash());
+                }
+                else
+                {
+                    BookMove old_book_move=new BookMove(san);
+                    old_book_move.set_from_hash((Hashtable)pos.get(san));
+                    old_book_move.count++;
+                    pos.put(san,old_book_move.report_hash());
+                }
+                
+                book_file.from_hash(book);
                 
             }
             
@@ -107,6 +225,9 @@ public class Game {
         
         public String to_begin()
         {
+            
+            sel_book_move=-1;
+            
             game_ptr=0;
             update_game();
             return initial_position;
@@ -114,6 +235,8 @@ public class Game {
         
         public String back()
         {
+            
+            sel_book_move=-1;
             
             if(game_ptr==0)
             {
@@ -136,6 +259,8 @@ public class Game {
         public String forward()
         {
             
+            sel_book_move=-1;
+            
             if(game_ptr==move_ptr)
             {
                 if(game_ptr==0)
@@ -156,6 +281,9 @@ public class Game {
         
         public String to_end()
         {
+            
+            sel_book_move=-1;
+            
             game_ptr=move_ptr;
             update_game();
             if(move_ptr==0)
@@ -168,6 +296,8 @@ public class Game {
         public String delete_move()
         {
             
+            sel_book_move=-1;
+            
             if(game_ptr<move_ptr)
             {
                 move_ptr=game_ptr;
@@ -176,6 +306,7 @@ public class Game {
             if(move_ptr==0)
             {
                 // nothing to delete
+                update_game();
                 return(initial_position);
             }
             else
@@ -197,8 +328,92 @@ public class Game {
             }
         }
         
+        
+        private int no_book_moves;
+        
+        public void update_book()
+        {
+            
+            String fen=initial_position;
+            if(game_ptr>0)
+            {
+                fen=positions[game_ptr-1];
+            }
+            
+            Object book_moves=book.get(fen);
+            
+            no_book_moves=0;
+            
+            book_list=new ArrayList<BookMove>();
+            
+            if(book_moves!=null)
+            {
+                
+                Hashtable book_moves_hash=(Hashtable)book_moves;
+                Set<String> keys = book_moves_hash.keySet();
+                
+                for(String key: keys)
+                {
+                    
+                    Hashtable value=(Hashtable)book_moves_hash.get(key);
+                    
+                    BookMove book_move=new BookMove(key);
+                    
+                    book_move.set_from_hash(value);
+                    
+                    book_list.add(book_move);
+                    
+                    
+                }
+                
+                // sort book list
+                
+                book_list.sort(new BookMoveComparator());
+                
+                no_book_moves=book_list.size();
+                
+                String[] temp_list=new String[200];
+                int temp_ptr=0;
+                
+                for (BookMove temp : book_list) {
+                    
+                    String notation_as_string="N/A";
+                    if(temp.notation>=0)
+                    {
+                        notation_as_string=notation_list[temp.notation];
+                    }
+                    String book_line=String.format("%-12s %-4s %5d",temp.san,notation_as_string,temp.count);
+                    temp_list[temp_ptr++]=book_line;
+		}
+ 
+                ObservableList<String> items =FXCollections.observableArrayList(
+                Arrays.copyOfRange(temp_list, 0, no_book_moves)
+                );
+                
+                blist.setItems(items);
+                
+                if(sel_book_move>=0)
+                {
+                    blist.getSelectionModel().select(sel_book_move);
+                }
+                else
+                {
+                    blist.getSelectionModel().select(null);
+                }
+                
+            }
+            else
+            {
+                blist.setItems(null);
+            }
+            
+            
+        }
+        
         public void update_game()
         {
+            
+            update_book();
             
             String[] game_buffer=new String[MAX_MOVES+1];
             
@@ -464,6 +679,135 @@ public class Game {
         
         };
         
+        private int sel_book_move=-1;
+        
+        private Stage select_annotation_stage;
+        int selected_notation;
+        
+        private EventHandler<MouseEvent> mouseHandlerBook = new EventHandler<MouseEvent>() {
+ 
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+                
+                int x=(int)mouseEvent.getX();
+                int y=(int)mouseEvent.getY();
+                
+                String type=mouseEvent.getEventType().toString();
+
+                if(type.equals("MOUSE_CLICKED"))
+                {
+                    //System.out.println("Mouse clicked over pgn text at x="+x+" y="+y);
+                    
+                    //System.out.println("caret position: "+pgn_text.getCaretPosition());
+                    
+                    int j=blist.getSelectionModel().getSelectedIndex();
+                    
+                    sel_book_move=j;
+                    
+                    int size=book_list.size();
+                    if(j<size)
+                    {
+                        String san=book_list.get(j).san;
+                        if(x<50)
+                        {
+                            b.make_san_move(san,true);
+                        }
+                        else
+                        {
+                            String fen_before=initial_position;
+                            if(move_ptr>0)
+                            {
+                                fen_before=positions[game_ptr-1];
+                            }
+
+                            Object pos_obj=book.get(fen_before);
+                            Hashtable pos;
+                            if(pos_obj==null)
+                            {
+                                pos=new Hashtable();
+                                book.put(fen_before,pos);
+                            }
+                            else
+                            {
+                                pos=(Hashtable)pos_obj;
+                            }
+
+                            if(pos.get(san)==null)
+                            {
+                                BookMove new_book_move=new BookMove(san);
+                                new_book_move.count=1;
+                                pos.put(san,new_book_move.report_hash());
+                            }
+                            else
+                            {
+                                BookMove old_book_move=new BookMove(san);
+                                old_book_move.set_from_hash((Hashtable)pos.get(san));
+                                
+                                // obtain new notation
+                                
+                                Group select_engine_group=new Group();
+        
+                                ListView<String> list = new ListView<String>();
+
+                                list.setMinWidth(200);
+                                list.setMaxWidth(200);
+                                list.setMinHeight(180);
+                                list.setMaxHeight(180);
+                                
+                                list.setStyle("-fx-font-family: monospace;");
+                                
+                                String[] notation_list={"!!  winning","!   strong","!?  promising","-   stable","?!  interesting","?   bad","??  losing"};
+                                ObservableList<String> items =FXCollections.observableArrayList(
+                                        notation_list
+                                    );
+
+                                list.setItems(items);
+
+                                select_engine_group.getChildren().add(list);
+
+                                Scene select_annotation_scene=new Scene(select_engine_group);
+
+                                select_annotation_stage=new Stage();
+
+                                select_annotation_stage.initModality(Modality.APPLICATION_MODAL);
+                                
+                                select_annotation_stage.setTitle("Select");
+                                select_annotation_stage.setScene(select_annotation_scene);
+
+                                list.setOnMouseClicked(new EventHandler<Event>() {
+
+                                        @Override
+                                        public void handle(Event event) {
+
+                                            selected_notation =  notation_list.length-1-list.getSelectionModel().getSelectedIndex();
+
+                                            select_annotation_stage.close();
+                                    }
+
+                                });
+                                
+                                selected_notation=old_book_move.notation;
+
+                                select_annotation_stage.showAndWait();
+                                
+                                // end obtain new notation
+                                
+                                old_book_move.notation=selected_notation;
+                                pos.put(san,old_book_move.report_hash());
+                            }
+
+                            book_file.from_hash(book);
+                            
+                            update_book();
+                        }
+                    }
+                            
+                }
+
+            }
+        
+        };
+        
         private void look_for_initial_dir()
         {
             if(initial_dir.equals(""))
@@ -479,8 +823,16 @@ public class Game {
         
         private Clipboard clip=Clipboard.getSystemClipboard();
         
+        private Hashtable book;
+        
+        private MyFile book_file;
+        final private String[] notation_list={"??","?","?!","-","!?","!","!!"};
+        
         public Game(Stage set_s,Board set_b)
         {
+            
+            book_file=new MyFile("book.txt");
+            book=book_file.to_hash();
             
             s=set_s;
             b=set_b;
@@ -641,7 +993,14 @@ public class Game {
             
             list.setMaxWidth(120);
             
-            vertical_box.getChildren().add(list);
+            book_box.getChildren().add(list);
+                     
+            blist.setMaxWidth(200);
+            blist.setStyle("-fx-font-family: monospace;");
+                        
+            book_box.getChildren().add(blist);
+            
+            vertical_box.getChildren().add(book_box);
             
             save_pgn_box.getChildren().add(save_as_pgn_button);
             pgn_name_text.setMaxWidth(300);
@@ -655,6 +1014,8 @@ public class Game {
             pgn_text.setStyle("-fx-display-caret: false;");
             
             pgn_text.setOnMouseClicked(mouseHandler);
+            
+            blist.setOnMouseClicked(mouseHandlerBook);
             
             vertical_box.getChildren().add(pgn_text);
             

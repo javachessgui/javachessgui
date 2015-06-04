@@ -3,6 +3,7 @@ package javachessgui;
 import javafx.application.Application;
 import javafx.scene.*;
 import javafx.stage.*;
+import java.util.Hashtable;
 
 public class Javachessgui extends Application {
     
@@ -10,7 +11,7 @@ public class Javachessgui extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-
+                
         init_app();
 
         primaryStage.setTitle("Chess GUI");

@@ -14,9 +14,12 @@ import java.nio.file.Paths;
 
 import java.nio.file.Path;
 import java.nio.file.InvalidPathException;
+import java.util.Hashtable;
+import java.util.Set;
 
 public class MyFile {
-   
+    
+    
     final static int MAX_LINES=10000;
     
     String path;
@@ -26,6 +29,116 @@ public class MyFile {
     public String content="";
     
     public int num_lines=0;
+    
+    private int level_of(String s)
+    {
+        int i=0;
+        int level=0;
+        while(i<s.length())
+        {
+            if(s.charAt(i)=='\t')
+            {
+                level++;
+                i++;
+            }
+            else
+            {
+                return level;
+            }
+        }
+        return level;
+    }
+    
+    private int line_ptr;
+    private Hashtable to_hash_recursive(Hashtable hash,int level)
+    {
+        
+        while(line_ptr<num_lines)
+        {
+            
+            String key=lines[line_ptr];
+            
+            if(level_of(key)==level)
+            {
+                
+                key=key.substring(level);
+                
+                line_ptr++;
+                
+                String value=lines[line_ptr];
+                
+                if(level_of(value)==level)
+                {
+                    value=value.substring(level);
+                    
+                    hash.put(key,value);
+                    line_ptr++;
+                }
+                else
+                {
+                    hash.put(key, to_hash_recursive(new Hashtable(),level+1));
+                }
+                
+            }
+            else
+            {
+                
+                return hash;
+                
+            }
+            
+        }
+        
+        return hash;
+        
+    }
+    
+    public Hashtable to_hash()
+    {
+        Hashtable hash=new Hashtable();
+        
+        read_lines();
+                        
+        line_ptr=0;
+        return to_hash_recursive(hash,0);
+    }
+    
+    private void from_hash_recursive(Hashtable hash,String tab)
+    {
+        
+        Set<String> keys = hash.keySet();
+        for(String key: keys)
+        {
+            Object value=hash.get(key);
+            
+            if(value instanceof Hashtable)
+            {
+                lines[line_ptr++]=tab+key;
+                from_hash_recursive((Hashtable)value,"\t"+tab);
+            }
+            else
+            {
+                lines[line_ptr++]=tab+key;
+                lines[line_ptr++]=tab+value.toString();
+            }
+        }
+        
+    }
+    
+    public void from_hash(Hashtable hash)
+    {
+        
+        line_ptr=0;
+        
+        from_hash_recursive(hash,"");
+        
+        num_lines=line_ptr;
+        
+        calc_content();
+        
+        write_content();
+        
+    }
     
     public String calc_content()
     {
