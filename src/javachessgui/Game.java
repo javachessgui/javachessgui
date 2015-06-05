@@ -38,6 +38,81 @@ import javafx.scene.Scene;
 
 import javafx.scene.control.cell.ComboBoxListCell;
 
+import javafx.scene.control.ListCell;
+import javafx.util.Callback;
+import javafx.scene.paint.Color;
+
+class AnnotationFormatCell extends ListCell<String> {
+    
+    public static Color get_color(String item)
+    {
+        
+        item=" "+item+" ";
+        
+        if(item.contains(" !! "))
+        {
+             return(Color.GREEN);
+        }
+        else if(item.contains(" ! "))
+        {
+             return(Color.DARKGREEN);
+        }
+        else if(item.contains(" ?? "))
+        {
+             return(Color.RED);
+        }
+        else if(item.contains(" ? "))
+        {
+             return(Color.DARKRED);
+        }
+        else if(item.contains(" !? "))
+        {
+             return(Color.DARKBLUE);
+        }
+        else if(item.contains(" ?! "))
+        {
+             return(Color.LIGHTBLUE);
+        }
+        else if(item.contains(" - "))
+        {
+             return(Color.BLACK);
+        }
+        
+        return(Color.GRAY);
+         
+    }
+
+     public AnnotationFormatCell() {    }
+       
+     @Override protected void updateItem(String item, boolean empty) {
+         // calling super here is very important - don't skip this!
+         super.updateItem(item, empty);
+         
+         setText(item);
+         
+         if(item==null)
+         {
+             return;
+         }
+         
+         Color c=get_color(item);
+         
+         if(!c.equals(Color.GRAY))
+         {
+             setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+         }
+         else
+         {
+             setStyle("-fx-font-size: 20px;");
+         }
+         
+         setTextFill(c);
+         
+         
+         }
+     }
+
+
 class BookMoveComparator implements Comparator<BookMove>
 {
     public int compare(BookMove b1, BookMove b2)
@@ -120,7 +195,7 @@ public class Game {
         String initial_dir="";
     
         ListView<String> list = new ListView<String>();
-        ListView blist = new ListView();
+        ListView blist = new ListView<String>();
         
         TextArea pgn_text=new TextArea();
     
@@ -435,7 +510,8 @@ public class Game {
 
             if(sel_book_move>=0)
             {
-                blist.getSelectionModel().select(sel_book_move);
+                //blist.getSelectionModel().select(sel_book_move);
+                blist.getSelectionModel().select(null);
             }
             else
             {
@@ -739,7 +815,7 @@ public class Game {
                     sel_book_move=j;
                     
                     int size=book_list.size();
-                    if(j<size)
+                    if((j>=0)&&(j<size))
                     {
                         String san=book_list.get(j).san;
                         if(x<50)
@@ -773,12 +849,13 @@ public class Game {
         
                                 ListView<String> list = new ListView<String>();
 
-                                list.setMinWidth(200);
-                                list.setMaxWidth(200);
-                                list.setMinHeight(180);
-                                list.setMaxHeight(180);
-                                
                                 list.setStyle("-fx-font-family: monospace;");
+                                
+                                list.setMinWidth(280);
+                                list.setMaxWidth(280);
+                                list.setMinHeight(260);
+                                list.setMaxHeight(260);
+                                
                                 
                                 String[] notation_list={"!!  winning","!   strong","!?  promising","-   stable","?!  interesting","?   bad","??  losing"};
                                 ObservableList<String> items =FXCollections.observableArrayList(
@@ -786,6 +863,12 @@ public class Game {
                                     );
 
                                 list.setItems(items);
+                                list.setCellFactory(new Callback<ListView<String>, ListCell<String>>()
+                                {
+                                    @Override public ListCell<String> call(ListView<String> list) {
+                                        return new AnnotationFormatCell();
+                                    }
+                                });
 
                                 select_engine_group.getChildren().add(list);
 
@@ -1043,8 +1126,15 @@ public class Game {
             
             book_box.getChildren().add(list);
                      
-            blist.setMaxWidth(200);
+            blist.setMinWidth(350);
             blist.setStyle("-fx-font-family: monospace;");
+            
+            blist.setCellFactory(new Callback<ListView<String>, ListCell<String>>()
+            {
+                @Override public ListCell<String> call(ListView<String> list) {
+                    return new AnnotationFormatCell();
+                }
+            });
                         
             book_box.getChildren().add(blist);
             
