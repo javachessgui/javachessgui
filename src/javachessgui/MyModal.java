@@ -21,6 +21,12 @@ public class MyModal {
         modal_stage.showAndWait();
     }
     
+    public void setxy(int x,int y)
+    {
+        modal_stage.setX(x);
+        modal_stage.setY(y);
+    }
+    
     public MyModal(Group modal_group,String title)
     {
         

@@ -1015,6 +1015,7 @@ public class Game {
             deep_stop_button.setText("Stop");
                        
             deep_text=new TextArea();
+            deep_text.setMaxHeight(120);
             
             VBox deep_vbox=new VBox();
             
@@ -1359,6 +1360,7 @@ public class Game {
                     create_start_deep_group();
 
                     start_deep_modal=new MyModal(start_deep_group,"Deep Analysis");
+                    start_deep_modal.setxy(10, 520);
                     
                     deep_stop_button.setOnAction(new EventHandler<ActionEvent>() {
                         @Override public void handle(ActionEvent e) {
