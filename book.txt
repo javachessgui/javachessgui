@@ -17,6 +17,16 @@ rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1
 		5
 		count
 		2
+rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 1 1
+	d5
+		eval
+		0
+		is_analyzed
+		false
+		notation
+		4
+		count
+		1
 rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 	b4
 		eval
@@ -27,6 +37,15 @@ rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 		1
 		notation
 		1
+	h4
+		eval
+		0
+		is_analyzed
+		false
+		count
+		1
+		notation
+		-1
 	d4
 		eval
 		0
@@ -44,7 +63,7 @@ rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 		notation
 		3
 		count
-		5
+		6
 	e4
 		eval
 		0
@@ -62,4 +81,4 @@ rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 		count
 		1
 		notation
-		-1
+		0

@@ -1,0 +1,18 @@
+d4
+	eval
+	0
+	is_analyzed
+	false
+	notation
+	-1
+	count
+	1
+e4
+	eval
+	0
+	is_analyzed
+	false
+	count
+	4
+	notation
+	4

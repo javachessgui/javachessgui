@@ -3,7 +3,8 @@ package javachessgui;
 import javafx.application.Application;
 import javafx.scene.*;
 import javafx.stage.*;
-import java.util.Hashtable;
+
+import java.io.*;
 
 public class Javachessgui extends Application {
     
@@ -12,12 +13,17 @@ public class Javachessgui extends Application {
     @Override
     public void start(Stage primaryStage) {
         
-        //Encode32 e=new Encode32();
-        
-        //System.out.println(e.encode("sjdlj öIOUHU^ˇ^[[đĐÖÍD=)D()Ö=(/D"));
-                
+        try
+        {
+            new File("book").mkdir();
+        }
+        catch(Exception e)
+        {
+            
+        }
+               
         init_app();
-
+        
         primaryStage.setTitle("Chess GUI");
         primaryStage.setX(0);
         primaryStage.setY(0);
