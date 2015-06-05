@@ -797,40 +797,48 @@ public class Game {
         
         private int sel_book_move=-1;
         
-        private Stage select_annotation_stage;
+        //private Stage select_annotation_stage;
         int selected_notation;
         
-        private EventHandler<MouseEvent> mouseHandlerBook = new EventHandler<MouseEvent>() {
- 
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                
-                int x=(int)mouseEvent.getX();
-                int y=(int)mouseEvent.getY();
-                
-                String type=mouseEvent.getEventType().toString();
+        Group select_notation_group;
+        ListView<String> select_notation_list;
+        
+        MyModal modal;
+        
+        private void create_select_notation_group()
+        {
+            select_notation_group=new Group();
+            
+            select_notation_list=new ListView<String>();
 
-                if(type.equals("MOUSE_CLICKED"))
-                {
-                    //System.out.println("Mouse clicked over pgn text at x="+x+" y="+y);
-                    
-                    //System.out.println("caret position: "+pgn_text.getCaretPosition());
-                    
-                    int j=blist.getSelectionModel().getSelectedIndex();
-                    
-                    sel_book_move=j;
-                    
-                    int size=book_list.size();
-                    if((j>=0)&&(j<size))
-                    {
-                        String san=book_list.get(j).san;
-                        if(x<50)
-                        {
-                            b.make_san_move(san,true);
-                        }
-                        else
-                        {
-                            String fen_before=initial_position;
+            select_notation_list.setStyle("-fx-font-family: monospace;");
+
+            select_notation_list.setMinWidth(280);
+            select_notation_list.setMaxWidth(280);
+            select_notation_list.setMinHeight(260);
+            select_notation_list.setMaxHeight(260);
+
+            String[] notation_list={"!!  winning","!   strong","!?  promising","-   stable","?!  interesting","?   bad","??  losing"};
+
+            ObservableList<String> select_notation_items =FXCollections.observableArrayList(
+                    notation_list
+            );
+
+            select_notation_list.setItems(select_notation_items);
+
+            select_notation_list.setCellFactory(new Callback<ListView<String>, ListCell<String>>()
+            {
+                @Override public ListCell<String> call(ListView<String> list) {
+                    return new AnnotationFormatCell();
+                }
+            });
+
+            select_notation_group.getChildren().add(select_notation_list);
+        }
+        
+        private void select_notation_for(String san)
+        {
+            String fen_before=initial_position;
                             if(move_ptr>0)
                             {
                                 fen_before=positions[game_ptr-1];
@@ -851,61 +859,33 @@ public class Game {
                                 
                                 // obtain new notation
                                 
-                                Group select_engine_group=new Group();
-        
-                                ListView<String> list = new ListView<String>();
+                                create_select_notation_group();
 
-                                list.setStyle("-fx-font-family: monospace;");
+                                modal=new MyModal(select_notation_group,"Select");
                                 
-                                list.setMinWidth(280);
-                                list.setMaxWidth(280);
-                                list.setMinHeight(260);
-                                list.setMaxHeight(260);
-                                
-                                
-                                String[] notation_list={"!!  winning","!   strong","!?  promising","-   stable","?!  interesting","?   bad","??  losing"};
-                                ObservableList<String> items =FXCollections.observableArrayList(
-                                        notation_list
-                                    );
+                                select_notation_list.setOnMouseClicked(new EventHandler<Event>() {
 
-                                list.setItems(items);
-                                list.setCellFactory(new Callback<ListView<String>, ListCell<String>>()
-                                {
-                                    @Override public ListCell<String> call(ListView<String> list) {
-                                        return new AnnotationFormatCell();
-                                    }
-                                });
+                                    @Override
+                                    public void handle(Event event) {
 
-                                select_engine_group.getChildren().add(list);
+                                        selected_notation=
+                                                notation_list.length-1-
+                                                select_notation_list.getSelectionModel().getSelectedIndex()
+                                        ;
 
-                                Scene select_annotation_scene=new Scene(select_engine_group);
-
-                                select_annotation_stage=new Stage();
-
-                                select_annotation_stage.initModality(Modality.APPLICATION_MODAL);
-                                
-                                select_annotation_stage.setTitle("Select");
-                                select_annotation_stage.setScene(select_annotation_scene);
-
-                                list.setOnMouseClicked(new EventHandler<Event>() {
-
-                                        @Override
-                                        public void handle(Event event) {
-
-                                            selected_notation =  notation_list.length-1-list.getSelectionModel().getSelectedIndex();
-
-                                            select_annotation_stage.close();
+                                        modal.close();
                                     }
 
                                 });
                                 
                                 selected_notation=old_book_move.notation;
-
-                                select_annotation_stage.showAndWait();
+                                
+                                modal.show_and_wait();
                                 
                                 // end obtain new notation
                                 
                                 old_book_move.notation=selected_notation;
+                                
                                 pos.put(san,old_book_move.report_hash());
                                 
                                 store_pos(fen_before,pos);
@@ -915,7 +895,45 @@ public class Game {
                             //book_file.from_hash(book);
                             
                             update_book();
+        }
+        
+        private EventHandler<MouseEvent> mouseHandlerBook = new EventHandler<MouseEvent>() {
+ 
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+                
+                int x=(int)mouseEvent.getX();
+                int y=(int)mouseEvent.getY();
+                
+                String type=mouseEvent.getEventType().toString();
+
+                if(type.equals("MOUSE_CLICKED"))
+                {
+                    
+                    int j=blist.getSelectionModel().getSelectedIndex();
+                    
+                    sel_book_move=j;
+                    
+                    int size=book_list.size();
+                    
+                    if((j>=0)&&(j<size))
+                    {
+                        
+                        String san=book_list.get(j).san;
+                        
+                        if(x<50)
+                        {
+                            
+                            b.make_san_move(san,true);
+                            
                         }
+                        else
+                        {
+                            
+                            select_notation_for(san);
+                            
+                        }
+                        
                     }
                             
                 }
@@ -1174,10 +1192,25 @@ public class Game {
             
             vertical_box.getChildren().add(book_box);
             
+            Button start_deep_button=new Button();
+            start_deep_button.setText("Start Deep");
+            start_deep_button.setOnAction(new EventHandler<ActionEvent>() {
+                @Override public void handle(ActionEvent e) {
+                    
+                    Group start_deep_group=new Group();
+                    
+                    MyModal modal=new MyModal(start_deep_group,"Deep Analysis");
+                    
+                    modal.show_and_wait();
+                    
+                }
+            });
+            
             save_pgn_box.getChildren().add(save_as_pgn_button);
             pgn_name_text.setMaxWidth(300);
             save_pgn_box.getChildren().add(pgn_name_text);
             save_pgn_box.getChildren().add(save_to_pgn_button);
+            save_pgn_box.getChildren().add(start_deep_button);
             
             vertical_box.getChildren().add(save_pgn_box);
             
