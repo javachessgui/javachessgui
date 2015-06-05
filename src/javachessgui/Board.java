@@ -360,7 +360,7 @@ public class Board {
                             &&    
                             (castling_rights.indexOf('k')>=0)
                             &&
-                            (!is_square_in_check(6,0,BLACK))
+                            (!is_square_in_check(4,0,BLACK))
                             &&
                             (!is_square_in_check(5,0,BLACK))
                         )
@@ -381,9 +381,9 @@ public class Board {
                             &&    
                             (castling_rights.indexOf('q')>=0)    
                             &&
-                            (!is_square_in_check(3,0,BLACK))
+                            (!is_square_in_check(4,0,BLACK))
                             &&
-                            (!is_square_in_check(2,0,BLACK))
+                            (!is_square_in_check(3,0,BLACK))
                         )
                         {
                             return true;
@@ -400,7 +400,7 @@ public class Board {
                             &&    
                             (castling_rights.indexOf('K')>=0)
                             &&
-                            (!is_square_in_check(6,7,WHITE))
+                            (!is_square_in_check(4,7,WHITE))
                             &&
                             (!is_square_in_check(5,7,WHITE))
                         )
@@ -421,9 +421,9 @@ public class Board {
                             &&    
                             (castling_rights.indexOf('Q')>=0)    
                             &&
-                            (!is_square_in_check(3,7,WHITE))
+                            (!is_square_in_check(4,7,WHITE))
                             &&
-                            (!is_square_in_check(2,7,WHITE))
+                            (!is_square_in_check(3,7,WHITE))
                         )
                         {
                             return true;
