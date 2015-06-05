@@ -1,2 +1,0 @@
-engine=C:\Unzip\Chess\stockfish-5-win\stockfish-5-win\Windows\stockfish_14053109_x64.exe
-initial_dir=C:\APgn

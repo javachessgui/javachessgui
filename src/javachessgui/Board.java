@@ -2187,6 +2187,14 @@ public class Board {
                             }
 
             //System.out.println("engine stopped ok");
+                
+            // record eval
+            bestmove.from_algeb(bestmove_algeb);
+            
+            String bestmove_san=to_san(bestmove);
+            
+            g.record_eval(report_fen(),bestmove_san,score_numerical);
+            
         }
             
         }

@@ -150,9 +150,9 @@ class BookMove
             notation=Integer.parseInt(hash.get("notation").toString());
         }
         
-        if(hash.get("analyzed")!=null)
+        if(hash.get("is_analyzed")!=null)
         {
-            is_analyzed=hash.get("analyzed").toString().equals("true");
+            is_analyzed=hash.get("is_analyzed").toString().equals("true");
         }
         
         if(hash.get("eval")!=null)
@@ -498,7 +498,13 @@ public class Game {
                 {
                     notation_as_string=notation_list[temp.notation];
                 }
-                String book_line=String.format("%-12s %-4s %5d",temp.san,notation_as_string,temp.count);
+                
+                String eval="_";
+                if(temp.is_analyzed)
+                {
+                    eval=""+temp.eval;
+                }
+                String book_line=String.format("%-10s %-4s %5d %8s",temp.san,notation_as_string,temp.count,eval);
                 temp_list[temp_ptr++]=book_line;
             }
 
@@ -938,6 +944,34 @@ public class Game {
         private MyFile book_file;
         final private String[] notation_list={"??","?","?!","-","!?","!","!!"};
         
+        public void record_eval(String fen,String san,int eval)
+        {
+            
+            Hashtable pos=get_pos(fen);
+                                
+            if(pos.get(san)==null)
+            {
+                BookMove new_book_move=new BookMove(san);
+                new_book_move.count=1;
+                new_book_move.is_analyzed=true;
+                new_book_move.eval=eval;
+                pos.put(san,new_book_move.report_hash());
+            }
+            else
+            {
+                BookMove old_book_move=new BookMove(san);
+                old_book_move.set_from_hash((Hashtable)pos.get(san));
+                old_book_move.is_analyzed=true;
+                old_book_move.eval=eval;
+                pos.put(san,old_book_move.report_hash());
+            }
+
+            store_pos(fen,pos);
+            
+            update_book();
+            
+        }
+        
         public Game(Stage set_s,Board set_b)
         {
             
@@ -1126,7 +1160,7 @@ public class Game {
             
             book_box.getChildren().add(list);
                      
-            blist.setMinWidth(350);
+            blist.setMinWidth(400);
             blist.setStyle("-fx-font-family: monospace;");
             
             blist.setCellFactory(new Callback<ListView<String>, ListCell<String>>()
