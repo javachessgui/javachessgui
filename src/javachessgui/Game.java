@@ -33,6 +33,7 @@ import javafx.scene.text.Font;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;   
+import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 
@@ -117,7 +118,18 @@ class BookMoveComparator implements Comparator<BookMove>
 {
     public int compare(BookMove b1, BookMove b2)
     {
-        return b2.notation-b1.notation;
+        if(b1.notation!=b2.notation)
+        {
+            return b2.notation-b1.notation;
+        }
+        else if(b1.eval!=b2.eval)
+        {
+            return b2.eval-b1.eval;
+        }
+        else
+        {
+            return b2.count-b1.count;
+        }
     }
 }
 
@@ -990,6 +1002,153 @@ public class Game {
             
         }
         
+        Group start_deep_group;
+        Button deep_stop_button;
+        TextArea deep_text;
+        MyModal start_deep_modal;
+        
+        private void create_start_deep_group()
+        {
+            start_deep_group=new Group();
+            
+            deep_stop_button=new Button();
+            deep_stop_button.setText("Stop");
+                       
+            deep_text=new TextArea();
+            
+            VBox deep_vbox=new VBox();
+            
+            deep_vbox.getChildren().add(deep_stop_button);
+            deep_vbox.getChildren().add(deep_text);
+            
+            start_deep_group.getChildren().add(deep_vbox);
+            
+        }
+        
+        private MyRunnable runnable_do_deep_thread;
+        private MyRunnable runnable_update_deep_thread;
+        
+        private Thread do_deep_thread;
+        private Thread update_deep_thread;
+        
+        private Boolean interrupt_deep;
+        
+        private int do_deep_i;
+        
+        private String[] deep_legal_move_list_buffer;
+        private int deep_legal_move_list_buffer_cnt=0;
+        
+        private Boolean deep_going;
+        
+        private String deep_san;
+        
+        Board test_board=new Board(false);
+        
+        public void do_deep()
+        {
+            
+            do_deep_i=0;
+            
+            String fen=b.report_fen();
+                        
+            for(int i=0;i<deep_legal_move_list_buffer_cnt;i++)
+            {
+                
+                Platform.runLater(new Runnable()
+                {
+
+                    public void run()
+                    {
+                        
+                        deep_san=deep_legal_move_list_buffer[do_deep_i++];
+                        
+                        b.set_from_fen(fen);
+                        
+                        b.make_san_move(deep_san, false);
+                        
+                        //System.out.println("deep san "+deep_san+" fen "+b.report_fen());
+
+                        b.go_infinite();
+
+                        try
+                        {
+                            Thread.sleep(1000);
+                        }
+                        catch(InterruptedException ex)
+                        {
+
+                        }
+
+                        b.stop_engine();
+                        
+                        b.set_from_fen(fen);
+                        
+                        //System.out.println("score "+b.score_numerical);
+                        
+                        record_eval(fen,deep_san,-b.score_numerical);
+
+                    }
+
+                });
+                
+                try
+                {
+                    Thread.sleep(1000);
+                }
+                catch(InterruptedException ex)
+                {
+
+                }
+                
+                if(interrupt_deep)
+                {
+                    
+                    break;
+                    
+                }
+                
+            }
+            
+            deep_going=false;
+            
+            Platform.runLater(new Runnable()
+            {
+
+                public void run()
+                {
+                    start_deep_modal.close();
+                }
+
+            });
+            
+        }
+        
+        public void update_deep()
+        {
+            while(deep_going)
+            {
+                
+                Platform.runLater(new Runnable()
+                {
+
+                    public void run()
+                    {
+                        deep_text.setText("examining "+deep_san);
+                    }
+
+                });
+                
+                try
+                {
+                    Thread.sleep(1000);
+                }
+                catch(InterruptedException ex)
+                {
+
+                }
+            }
+        }
+        
         public Game(Stage set_s,Board set_b)
         {
             
@@ -1197,11 +1356,52 @@ public class Game {
             start_deep_button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
                     
-                    Group start_deep_group=new Group();
+                    create_start_deep_group();
+
+                    start_deep_modal=new MyModal(start_deep_group,"Deep Analysis");
                     
-                    MyModal modal=new MyModal(start_deep_group,"Deep Analysis");
+                    deep_stop_button.setOnAction(new EventHandler<ActionEvent>() {
+                        @Override public void handle(ActionEvent e) {
+                            
+                            interrupt_deep=true;
+                            
+                        }
+                    });
                     
-                    modal.show_and_wait();
+                    b.stop_engine();
+                    
+                    b.list_legal_moves();
+                    deep_legal_move_list_buffer=new String[500];
+            
+                    deep_legal_move_list_buffer_cnt=b.legal_move_list_buffer_cnt;
+                    deep_legal_move_list_buffer=Arrays.copyOfRange(b.legal_move_list_buffer,0,deep_legal_move_list_buffer_cnt);
+                    Arrays.sort(deep_legal_move_list_buffer);
+                    
+                    System.out.println("no legal moves: "+b.legal_move_list_buffer_cnt);
+                    
+                    runnable_do_deep_thread=new MyRunnable();
+                    runnable_do_deep_thread.kind="do_deep";
+                    runnable_do_deep_thread.b=b;
+
+                    do_deep_thread=new Thread(runnable_do_deep_thread);
+                    
+                    runnable_update_deep_thread=new MyRunnable();
+                    runnable_update_deep_thread.kind="update_deep";
+                    runnable_update_deep_thread.b=b;
+
+                    update_deep_thread=new Thread(runnable_update_deep_thread);
+
+                    interrupt_deep=false;
+                    
+                    b.deep_going=true;
+                    deep_going=true;
+                    
+                    do_deep_thread.start();
+                    update_deep_thread.start();
+                    
+                    start_deep_modal.show_and_wait();
+                    
+                    b.deep_going=false;
                     
                 }
             });

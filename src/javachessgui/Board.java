@@ -85,6 +85,8 @@ import javafx.stage.*;
 
 public class Board {
     
+    public Boolean deep_going=false;
+    
     
     public Stage s=new Stage();
     
@@ -217,7 +219,7 @@ public class Board {
     private int score_cp;
     private int score_mate;
     private String score_verbal;
-    private int score_numerical;
+    public int score_numerical;
     private Boolean engine_running;
     ////////////////////////////////////////////////////////
     
@@ -833,6 +835,8 @@ public class Board {
     private void update_engine()
     {
         
+        if(deep_going){return;}
+        
         if(engine_intro){return;}
         
         if((bestmove_algeb!="")&&(bestmove_algeb!=null))
@@ -953,7 +957,7 @@ public class Board {
     public void consume_engine_out(String uci)
     {
         
-        System.out.println("uci "+uci);
+        //System.out.println("uci "+uci);
         
         if(engine_intro)
         {
@@ -1114,6 +1118,11 @@ public class Board {
     
     public void drawBoard() {
         
+        if(deep_going)
+        {
+            return;
+        }
+        
         board_to_fonts(board);
         
 	gc.setFont(chess_font);
@@ -1268,7 +1277,7 @@ public class Board {
             fullmove_number=Integer.parseInt(fullmove_number_part);
         }
         
-        if(with_gui)
+        if((with_gui)&&(!deep_going))
         {
             
             drawBoard();
@@ -1641,14 +1650,16 @@ public class Board {
         
     }
     
-    private void list_legal_moves()
+    public String[] legal_move_list_buffer=new String[250];
+    
+    public int legal_move_list_buffer_cnt=0;
+    
+    public void list_legal_moves()
     {
         init_move_generator();
         
-        String[] legal_move_list_buffer=new String[250];
-        
         String legal_move_list_as_string;
-        int legal_move_list_buffer_cnt=0;
+        legal_move_list_buffer_cnt=0;
         
         while(next_pseudo_legal_move())
         {
@@ -2160,7 +2171,8 @@ public class Board {
                 }
     }
     
-    private void go_infinite()
+    
+    public void go_infinite()
     {
         engine_intro=false;
         String fen=report_fen();
@@ -2169,7 +2181,7 @@ public class Board {
         engine_running=true;
     }
     
-    private void stop_engine()
+    public void stop_engine()
     {
         
         if(engine_running)
@@ -2244,6 +2256,7 @@ public class Board {
         String algeb="";
         
         char piece=san.charAt(0);
+        
         if((piece>='a')&&(piece<='z'))
         {
             // pawn move

@@ -12,45 +12,66 @@ public class MyRunnable implements Runnable {
     public String command;
     public Board b;
     
+    
      public void run(){
          
-         int i=0;
+        int i=0;
+
+        String total_buffer="";
+        String buffer="";
          
-         String total_buffer="";
-         String buffer="";
-         
-         while (!Thread.currentThread().isInterrupted()) {
-             
-               if(kind=="engine_read")
-               {
+        if(kind.equals("do_deep"))
+        {
+
+            b.g.do_deep();
+            
+            return;
+
+        }
+        
+        if(kind.equals("update_deep"))
+        {
+
+            b.g.update_deep();
+            
+            return;
+
+        }
+        
+        if(kind.equals("engine_read"))
+        {
+            
+            while (!Thread.currentThread().isInterrupted()) {
                    
-                   try
-                   {
-                       
-                        char chunk=(char)std_in.read();
+                try
+                {
 
-                        if(chunk=='\n')
-                        {
-                            //total_buffer=buffer+"\n"+total_buffer;
-                            b.consume_engine_out(buffer);
-                            buffer="";
-                        }
-                        else
-                        {
-                            buffer+=chunk;
-                        }
+                     char chunk=(char)std_in.read();
 
-                    }
-                    catch(IOException ex)
-                    {
-                        
-                        System.out.println("engine read IO exception");
-                        
-                    }
-                   
-               }
+                     if(chunk=='\n')
+                     {
+                         //total_buffer=buffer+"\n"+total_buffer;
+                         b.consume_engine_out(buffer);
+                         buffer="";
+                     }
+                     else
+                     {
+                         buffer+=chunk;
+                     }
 
-         }
+                 }
+                 catch(IOException ex)
+                 {
+
+                     System.out.println("engine read IO exception");
+
+                 }
+
+            }
+
+            return;
+
+        }
          
     }
 }
