@@ -586,9 +586,23 @@ public class Game {
             
             game_buffer[0]="*";
             
+            Board dummy=new Board(false);
+            dummy.set_from_fen_inner(initial_position,false);
+            int fullmove_number=dummy.fullmove_number;
+            int turn=dummy.turn;
+            
             for(int i=0;i<move_ptr;i++)
             {
-                game_buffer[i+1]=moves[i];
+                if(turn==1)
+                {
+                    game_buffer[i+1]=fullmove_number+". "+moves[i];
+                }
+                else
+                {
+                    game_buffer[i+1]="          ... "+moves[i];
+                    fullmove_number++;
+                }
+                turn=-turn;
             }
 
             //game_text.setText(game_buffer);
