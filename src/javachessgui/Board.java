@@ -1501,7 +1501,7 @@ public class Board {
         }
         
         // castling
-        if(orig_piece=='k')
+        if(m.orig_piece=='k')
         {
             if((m.j1==0)&&(m.i1==4)&&(m.j2==0)&&(m.i2==6))
             {
@@ -1516,7 +1516,7 @@ public class Board {
             }
         }
         
-        if(orig_piece=='K')
+        if(m.orig_piece=='K')
         {
             if((m.j1==7)&&(m.i1==4)&&(m.j2==7)&&(m.i2==6))
             {
