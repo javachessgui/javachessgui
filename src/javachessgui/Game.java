@@ -43,6 +43,9 @@ import javafx.scene.control.ListCell;
 import javafx.util.Callback;
 import javafx.scene.paint.Color;
 
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+
 class AnnotationFormatCell extends ListCell<String> {
     
     public static Color get_color(String item)
@@ -1004,23 +1007,44 @@ public class Game {
         
         Group start_deep_group;
         Button deep_stop_button;
-        TextArea deep_text;
+        //TextArea deep_text;
+        Label deep_text;
         MyModal start_deep_modal;
+        ProgressBar progress;
         
         private void create_start_deep_group()
         {
+            
+            int width=440;
+            
             start_deep_group=new Group();
             
             deep_stop_button=new Button();
             deep_stop_button.setText("Stop");
+            deep_stop_button.setTranslateX(10);
+            deep_stop_button.setTranslateY(10);
                        
-            deep_text=new TextArea();
-            deep_text.setMaxHeight(120);
+            /*deep_text=new TextArea();
+            deep_text.setMaxHeight(120);*/
             
-            VBox deep_vbox=new VBox();
+            deep_text=new Label();
+            deep_text.setTranslateX(15);
+            deep_text.setTranslateY(10);
+                        
+            progress = new ProgressBar();
+            progress.setMinWidth(width-20);
+            progress.setTranslateX(10);
+            
+            VBox deep_vbox=new VBox(20);
+            
+            deep_vbox.setMinWidth(width);
+            deep_vbox.setMaxWidth(width);
+            deep_vbox.setMinHeight(160);
+            deep_vbox.setMaxHeight(160);
             
             deep_vbox.getChildren().add(deep_stop_button);
             deep_vbox.getChildren().add(deep_text);
+            deep_vbox.getChildren().add(progress);
             
             start_deep_group.getChildren().add(deep_vbox);
             
@@ -1134,7 +1158,10 @@ public class Game {
 
                     public void run()
                     {
-                        deep_text.setText("examining "+deep_san);
+                        deep_text.setText("Examining: "+deep_san);
+                        double p=(double)do_deep_i/(double)deep_legal_move_list_buffer_cnt;
+                        
+                        progress.setProgress(p);
                     }
 
                 });
@@ -1360,7 +1387,7 @@ public class Game {
                     create_start_deep_group();
 
                     start_deep_modal=new MyModal(start_deep_group,"Deep Analysis");
-                    start_deep_modal.setxy(10, 520);
+                    start_deep_modal.setxy(15, 515);
                     
                     deep_stop_button.setOnAction(new EventHandler<ActionEvent>() {
                         @Override public void handle(ActionEvent e) {
