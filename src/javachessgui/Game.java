@@ -45,6 +45,7 @@ import javafx.scene.paint.Color;
 
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.input.DataFormat;
 
 import javax.swing.JOptionPane; 
 
@@ -1237,6 +1238,21 @@ public class Game {
             }
         }
         
+        private void copy_content(String content_as_string)
+        {
+            ClipboardContent content = new ClipboardContent();
+            content.putString(content_as_string);
+            clip.setContent(content);
+            Javachessgui.system_message("Content copied to clipboard:\n\n"+content_as_string,5000);
+        }
+        
+        private String get_content()
+        {
+            String content_as_string=clip.getString();
+            Javachessgui.system_message("Content copied from clipboard:\n\n"+content_as_string,5000);
+            return content_as_string;
+        }
+        
         public Game(Stage set_s,Board set_b)
         {
             
@@ -1304,9 +1320,11 @@ public class Game {
                         calc_pgn();
 
                         my_file.content=pgn;
-
+                        
                         my_file.write_content();
-                     
+                        
+                        Javachessgui.system_message("Saved to file: "+path+"\n\nContent: "+my_file.content,3000);
+                        
                     }
                 }
                 
@@ -1353,7 +1371,7 @@ public class Game {
             clip_to_fen_button.setText("Clip->Fen");
             clip_to_fen_button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                    String fen=clip.getString();
+                    String fen=get_content();
                     if(fen!=null)
                     {
                         b.set_from_fen(fen);
@@ -1366,9 +1384,7 @@ public class Game {
             fen_to_clip_button.setText("Fen->Clip");
             fen_to_clip_button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                    ClipboardContent content = new ClipboardContent();
-                    content.putString(b.report_fen());
-                    clip.setContent(content);
+                    copy_content(b.report_fen());
                 }
             });
             
@@ -1376,7 +1392,7 @@ public class Game {
             clip_to_pgn_button.setText("Clip->PGN");
             clip_to_pgn_button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                    String pgn=clip.getString();
+                    String pgn=get_content();
                     if(pgn!=null)
                     {
                         pgn_lines = pgn.split("\\r?\\n");
@@ -1389,9 +1405,7 @@ public class Game {
             pgn_to_clip_button.setText("PGN->Clip");
             pgn_to_clip_button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                    ClipboardContent content = new ClipboardContent();
-                    content.putString(calc_pgn());
-                    clip.setContent(content);
+                    copy_content(calc_pgn());
                 }
             });
             

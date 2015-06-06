@@ -4,6 +4,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 
+import static javachessgui.Javachessgui.timer;
+import static javachessgui.Javachessgui.message_text;
+import static javachessgui.Javachessgui.message_text_style;
+import javafx.application.Platform;
+
 public class MyRunnable implements Runnable {
     
     public String kind;
@@ -19,6 +24,35 @@ public class MyRunnable implements Runnable {
 
         String total_buffer="";
         String buffer="";
+        
+        if(kind.equals("system_message"))
+        {
+            
+            try
+                {
+                    Thread.sleep(timer);
+                }
+                catch(InterruptedException ex)
+                {
+
+                }
+            
+            Platform.runLater(new Runnable()
+            {
+
+                public void run()
+                {
+
+
+                    message_text.setStyle("-fx-opacity: 0;"+message_text_style);
+
+                }   
+
+            });
+            
+            return;
+
+        }
          
         if(kind.equals("do_deep"))
         {

@@ -5,10 +5,61 @@ import javafx.scene.*;
 import javafx.stage.*;
 
 import java.io.*;
+import javafx.application.Platform;
+
+import javafx.scene.control.TextArea;
 
 public class Javachessgui extends Application {
     
     public Gui gui;
+    
+    public static TextArea message_text=new TextArea();
+    
+    final static String message_text_style="-fx-border-width: 5px;-fx-border-radius: 10px;-fx-border-style: solid;-fx-border-color: #ff7f7f;";
+    
+    public static int timer;
+    public static void system_message(String what,int set_timer)
+    {
+        
+        timer=set_timer;
+        
+        message_text.setText(what);
+        message_text.setStyle("-fx-opacity: 1;"+message_text_style);
+                
+        Thread system_message_thread=new Thread(new Runnable()
+        {
+
+            public void run()
+            {
+
+                try
+                {
+                    Thread.sleep(timer);
+                }
+                catch(InterruptedException ex)
+                {
+
+                }
+
+                Platform.runLater(new Runnable()
+                {
+
+                    public void run()
+                    {
+
+                        message_text.setStyle("-fx-opacity: 0;"+message_text_style);
+
+                    }   
+
+                });
+
+            }   
+
+        });
+
+        system_message_thread.start();
+                
+    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -33,9 +84,17 @@ public class Javachessgui extends Application {
         gui = new Gui(primaryStage);
 
         root.getChildren().add(gui.horizontal_box);
+        
+        message_text.setWrapText(true);
+        message_text.setTranslateX(30);
+        message_text.setTranslateY(30);
+        message_text.setStyle("-fx-opacity: 0;"+message_text_style);
+        root.getChildren().add(message_text);
 
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
+        
+        system_message("Welcome!",2000);
         
         System.out.println("application started");
     }
