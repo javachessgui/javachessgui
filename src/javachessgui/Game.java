@@ -545,6 +545,36 @@ public class Game {
             }
             
         }
+               
+        private String curr_pos(int ptr)
+        {
+            if(ptr>0)
+            {
+                return positions[ptr-1];
+            }
+            else
+            {
+                return initial_position;
+            }
+        }
+        
+        public void highlight_last_move()
+        {
+            if(game_ptr>0)
+            {
+                String fen_before=curr_pos(game_ptr-1);
+                Board dummy=new Board(false);
+                dummy.set_from_fen(fen_before);
+                String san=moves[game_ptr-1];
+                Move m=dummy.san_to_move(san);
+                b.highlight_move(m);
+            }
+            else
+            {
+                b.highlight_move(null);
+            }
+             
+        }
         
         public void update_game()
         {
@@ -578,12 +608,20 @@ public class Game {
                 
                 pgn_text.positionCaret(move_indices[game_ptr-1]);
                 pgn_text.selectNextWord();
-
+                
             }
             else
             {
                 pgn_text.selectRange(0, start_fen_end_index);
             }
+            
+            String fen=curr_pos(game_ptr);
+            
+            b.set_from_fen_inner(fen,false);
+                        
+            b.make_move_show(null);
+            
+            highlight_last_move();
                         
         }
         
@@ -755,8 +793,6 @@ public class Game {
             
             game_ptr=move_ptr;
             
-            b.drawBoard();
-            
             update_game();
             
         }
@@ -789,9 +825,6 @@ public class Game {
                             String pos=initial_position;
                             if(game_ptr>0){pos=positions[game_ptr-1];}
                                                         
-                            b.set_from_fen_inner(pos,false);
-                            b.drawBoard();
-                            
                             update_game();
                             
                             return;
@@ -803,10 +836,7 @@ public class Game {
                         game_ptr=move_ptr;
                             
                         String pos=positions[game_ptr-1];
-
-                        b.set_from_fen_inner(pos,false);
-                        b.drawBoard();
-
+                        
                         update_game();
                     }
                 }
@@ -1481,7 +1511,6 @@ public class Game {
                             game_ptr=selected;
                             
                             b.set_from_fen_inner(pos,false);
-                            b.drawBoard();
                             
                             update_game();
 

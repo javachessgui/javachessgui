@@ -185,10 +185,12 @@ public class Board {
     public TextArea legal_move_list = new TextArea ();
     
     public Canvas canvas;
+    public Canvas highlight_canvas;
     public Canvas upper_canvas;
     public Canvas engine_canvas;
     
     private GraphicsContext gc;
+    private GraphicsContext highlight_gc;
     private GraphicsContext upper_gc;
     private GraphicsContext engine_gc;
     
@@ -1954,7 +1956,7 @@ public class Board {
         return raw;
     }
     
-    private void make_move_show(Move m)
+    public void make_move_show(Move m)
     {
         
         Boolean restart=false;
@@ -2229,7 +2231,7 @@ public class Board {
         
     }
     
-    private Move san_to_move(String san)
+    public Move san_to_move(String san)
     {
         
         Move m=new Move();
@@ -2681,6 +2683,23 @@ public class Board {
         select_engine_stage.showAndWait();
         
     }
+    
+    public void highlight_move(Move m)
+    {
+        
+        highlight_gc.clearRect(0,0,board_size,board_size);
+        
+        if(m==null)
+        {
+            return;
+        }
+        
+        int arc=piece_size/2;
+        int size=piece_size-2;
+        highlight_gc.fillRoundRect(gc_x(m.i1)+1,gc_y(m.j1)+3,size,size,arc,arc);
+        highlight_gc.fillRoundRect(gc_x(m.i2)+1,gc_y(m.j2)+3,size,size,arc,arc);
+        
+    }
     	
     public Board(Boolean set_with_gui)
     {
@@ -2763,10 +2782,12 @@ public class Board {
             legal_move_list.setMaxWidth(120);
         
             canvas=new Canvas(board_size,board_size+info_bar_size);
+            highlight_canvas=new Canvas(board_size,board_size);
             upper_canvas=new Canvas(board_size,board_size);
             engine_canvas=new Canvas(board_size,board_size);
 
             canvas_group.getChildren().add(canvas);
+            canvas_group.getChildren().add(highlight_canvas);
             canvas_group.getChildren().add(engine_canvas);
             canvas_group.getChildren().add(upper_canvas);
 
@@ -2840,8 +2861,7 @@ public class Board {
             to_begin_button.setText("<<");
             to_begin_button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                 set_from_fen_inner(g.to_begin(),false);
-                    make_move_show(null);
+                    g.to_begin();
                 }
             });
             
@@ -2849,8 +2869,7 @@ public class Board {
             back_button.setText("<");
             back_button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                 set_from_fen_inner(g.back(),false);
-                    make_move_show(null);
+                    g.back();
                 }
             });
             
@@ -2858,8 +2877,7 @@ public class Board {
             forward_button.setText(">");
             forward_button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                 set_from_fen_inner(g.forward(),false);
-                    make_move_show(null);
+                    g.forward();
                 }
             });
             
@@ -2867,8 +2885,7 @@ public class Board {
             to_end_button.setText(">>");
             to_end_button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
-                 set_from_fen_inner(g.to_end(),false);
-                    make_move_show(null);
+                    g.to_end();
                 }
             });
             
@@ -2926,6 +2943,11 @@ public class Board {
             upper_canvas.setOnMouseReleased(mouseHandler);
 
             gc = canvas.getGraphicsContext2D();
+            
+            highlight_gc = highlight_canvas.getGraphicsContext2D();
+            highlight_canvas.setOpacity(0.2);
+            highlight_gc.setFill(Color.rgb(255,255,0));
+            
             upper_gc = upper_canvas.getGraphicsContext2D();
             engine_gc = engine_canvas.getGraphicsContext2D();
 
