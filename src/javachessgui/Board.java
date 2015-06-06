@@ -272,6 +272,19 @@ public class Board {
     private Move current_move=new Move();
     ////////////////////////////////////////////////////////
     
+    public Boolean is_engine_installed()
+    {
+        if(uci_engine_path==null)
+        {
+            return false;
+        }
+        if(uci_engine_path.equals(""))
+        {
+            return false;
+        }
+        return true;
+    }
+    
     private void init_move_generator()
     {
         curr_i=-1;
@@ -2165,6 +2178,7 @@ public class Board {
         engine_stop_button.setDisable(true);
         engine_make_button.setDisable(true);
         
+        
         if(!(uci_engine_path.equals("")))
         {
             engine_read_thread.interrupt();
@@ -2223,7 +2237,7 @@ public class Board {
             
             String bestmove_san=to_san(bestmove);
             
-            g.record_eval(report_fen(),bestmove_san,score_numerical);
+            //g.record_eval(report_fen(),bestmove_san,score_numerical);
             
         }
             
@@ -2616,6 +2630,7 @@ public class Board {
             engine_go_button.setDisable(false);
             engine_stop_button.setDisable(false);
             engine_make_button.setDisable(false);
+            
             
             return true;
 

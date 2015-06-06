@@ -46,6 +46,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 
+import javax.swing.JOptionPane; 
+
 class AnnotationFormatCell extends ListCell<String> {
     
     public static Color get_color(String item)
@@ -194,7 +196,6 @@ class BookMove
 
 public class Game {
     
-           
         List<BookMove> book_list;
     
         private Hashtable pgn_header_hash=new Hashtable();
@@ -1428,6 +1429,12 @@ public class Game {
             start_deep_button.setText("Start Deep");
             start_deep_button.setOnAction(new EventHandler<ActionEvent>() {
                 @Override public void handle(ActionEvent e) {
+                    
+                    if(!b.is_engine_installed())
+                    {
+                        JOptionPane.showMessageDialog(null, "Please load a UCI engine!");
+                        return;
+                    }
                     
                     create_start_deep_group();
 
