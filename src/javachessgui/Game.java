@@ -1150,6 +1150,16 @@ public class Game {
         
         public void update_deep()
         {
+            
+            try
+                {
+                    Thread.sleep(500);
+                }
+                catch(InterruptedException ex)
+                {
+
+                }
+            
             while(deep_going)
             {
                 
