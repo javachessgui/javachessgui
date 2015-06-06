@@ -1292,6 +1292,13 @@ public class Board {
         return true;
     }
     
+    public static String fen_to_raw(String fen)
+    {
+        String raw_fen=fen.replaceAll(" [^ ]+ [^ ]+$", "");
+        
+        return raw_fen;
+    }
+    
     public String report_fen()
     {
         
@@ -1494,28 +1501,34 @@ public class Board {
         }
         
         // castling
-        if((m.j1==0)&&(m.i1==4)&&(m.j2==0)&&(m.i2==6))
+        if(orig_piece=='k')
         {
-            board[7][0]=' ';
-            board[5][0]='r';
+            if((m.j1==0)&&(m.i1==4)&&(m.j2==0)&&(m.i2==6))
+            {
+                board[7][0]=' ';
+                board[5][0]='r';
+            }
+
+            if((m.j1==0)&&(m.i1==4)&&(m.j2==0)&&(m.i2==2))
+            {
+                board[0][0]=' ';
+                board[3][0]='r';
+            }
         }
         
-        if((m.j1==0)&&(m.i1==4)&&(m.j2==0)&&(m.i2==2))
+        if(orig_piece=='K')
         {
-            board[0][0]=' ';
-            board[3][0]='r';
-        }
-        
-        if((m.j1==7)&&(m.i1==4)&&(m.j2==7)&&(m.i2==6))
-        {
-            board[7][7]=' ';
-            board[5][7]='R';
-        }
-        
-        if((m.j1==7)&&(m.i1==4)&&(m.j2==7)&&(m.i2==2))
-        {
-            board[0][7]=' ';
-            board[3][7]='R';
+            if((m.j1==7)&&(m.i1==4)&&(m.j2==7)&&(m.i2==6))
+            {
+                board[7][7]=' ';
+                board[5][7]='R';
+            }
+
+            if((m.j1==7)&&(m.i1==4)&&(m.j2==7)&&(m.i2==2))
+            {
+                board[0][7]=' ';
+                board[3][7]='R';
+            }
         }
         
         // ep capture
@@ -1749,10 +1762,13 @@ public class Board {
         
         String algeb=m.to_algeb();
         
-        if(algeb.equals("e1g1")){return "O-O";}
-        if(algeb.equals("e8g8")){return "O-O";}
-        if(algeb.equals("e1c1")){return "O-O-O";}
-        if(algeb.equals("e8c8")){return "O-O-O";}
+        if(from_piece_type==KING)
+        {
+            if(algeb.equals("e1g1")){return "O-O";}
+            if(algeb.equals("e8g8")){return "O-O";}
+            if(algeb.equals("e1c1")){return "O-O-O";}
+            if(algeb.equals("e8c8")){return "O-O-O";}
+        }
                 
         char to_piece=board[m.i2][m.j2];
         String target_algeb=""+algeb.charAt(2)+algeb.charAt(3);

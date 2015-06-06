@@ -261,6 +261,8 @@ public class Game {
         private Hashtable get_pos(String fen)
         {
             
+            fen=Board.fen_to_raw(fen);
+            
             Object pos_obj=book.get(fen);
             
             if(pos_obj==null)
@@ -300,6 +302,9 @@ public class Game {
         
         private void store_pos(String fen,Hashtable hash)
         {
+            
+            fen=Board.fen_to_raw(fen);
+            
             String name=fen_to_name(fen);
             
             MyFile pos_file=new MyFile(name);
