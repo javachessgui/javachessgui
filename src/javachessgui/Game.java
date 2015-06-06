@@ -1488,7 +1488,8 @@ public class Game {
             });
             
             save_pgn_box.getChildren().add(save_as_pgn_button);
-            pgn_name_text.setMaxWidth(300);
+            pgn_name_text.setMinWidth(290);
+            pgn_name_text.setStyle("-fx-font-size: 20px;-fx-font-family: monospace;");
             save_pgn_box.getChildren().add(pgn_name_text);
             save_pgn_box.getChildren().add(save_to_pgn_button);
             save_pgn_box.getChildren().add(start_deep_button);
