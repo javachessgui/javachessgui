@@ -25,6 +25,7 @@ public class Javachessgui extends Application {
         
         message_text.setText(what);
         message_text.setStyle("-fx-opacity: 1;"+message_text_style);
+        message_text.toFront();
                 
         Thread system_message_thread=new Thread(new Runnable()
         {
@@ -48,6 +49,7 @@ public class Javachessgui extends Application {
                     {
 
                         message_text.setStyle("-fx-opacity: 0;"+message_text_style);
+                        message_text.toBack();
 
                     }   
 
