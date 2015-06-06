@@ -972,7 +972,7 @@ public class Game {
                         
                         String san=book_list.get(j).san;
                         
-                        if(x<50)
+                        if(x<120)
                         {
                             
                             b.make_san_move(san,true);
