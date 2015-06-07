@@ -650,7 +650,7 @@ public class Game {
             int fullmove_number=dummy.fullmove_number;
             int turn=dummy.turn;
             
-            pgn="[StartFen \""+initial_position+"\"]\n";
+            pgn="[FEN \""+initial_position+"\"]\n";
             start_fen_end_index=pgn.length()-1;
             pgn+="[Flip \""+b.flip+"\"]\n";
             
@@ -660,7 +660,7 @@ public class Game {
             for(String key: keys)
             {
                 String value=pgn_header_hash.get(key).toString();
-                if((!key.equals("StartFen"))&&(!key.equals("Flip")))
+                if((!key.equals("FEN"))&&(!key.equals("Flip")))
                 {
                     pgn+="["+key+" \""+value+"\"]\n";
                 }
@@ -758,6 +758,14 @@ public class Game {
                                 //System.out.println("key "+key+" value "+value);
                                 
                                 pgn_header_hash.put(key,value);
+                                
+                                // set initial position if any
+                                
+                                if(key.equals("FEN"))
+                                {
+                                    initial_position=value;
+                                }
+                                
                             }
                             
                         }
@@ -790,7 +798,7 @@ public class Game {
             
             String token;
             
-            b.reset();
+            b.set_from_fen(initial_position);
             
             while((token=t.get_token())!=null)
             {
@@ -1148,7 +1156,7 @@ public class Game {
 
                         try
                         {
-                            Thread.sleep(1000);
+                            Thread.sleep(250);
                         }
                         catch(InterruptedException ex)
                         {
@@ -1169,7 +1177,7 @@ public class Game {
                 
                 try
                 {
-                    Thread.sleep(1000);
+                    Thread.sleep(300);
                 }
                 catch(InterruptedException ex)
                 {
