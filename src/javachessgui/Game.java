@@ -733,19 +733,7 @@ public class Game {
                         }
                         else
                         {
-                            //System.out.println("header "+line);
-                            Pattern get_flip = Pattern.compile("(Flip .true)");
-                            Matcher flip_matcher = get_flip.matcher(line);
-            
-                            if(flip_matcher.find())
-                            {
-                                b.flip=true;
-                            }
-                            else
-                            {
-                                b.flip=false;
-                            }
-                                                        
+                            
                             // parse header fields
                             
                             Pattern get_header = Pattern.compile("\\[([^ ]+) \"([^\\\"]+)\\\"");
@@ -799,6 +787,12 @@ public class Game {
             String token;
             
             b.set_from_fen(initial_position);
+            
+            Object flip=pgn_header_hash.get("Flip");
+            if(flip!=null)
+            {
+                b.flip=flip.toString().equals("true")?true:false;
+            }
             
             while((token=t.get_token())!=null)
             {
@@ -1261,6 +1255,36 @@ public class Game {
             return content_as_string;
         }
         
+        private void highlight_name_in_path()
+        {
+            
+            String path=pgn_name_text.getText();
+            if(path.length()<5)
+            {
+                return;
+            }
+            
+            Pattern get_name = Pattern.compile("([^\\\\\\/]+\\.pgn$)");
+            Matcher name_matcher = get_name.matcher(path);
+
+            if(name_matcher.find())
+            {
+                int index=path.indexOf(name_matcher.group(0));
+                pgn_name_text.requestFocus();
+                pgn_name_text.positionCaret(index);
+                pgn_name_text.selectRange(index,path.length()-4);
+            }
+            
+        }
+        
+        private EventHandler<MouseEvent> pgn_name_text_clicked = new EventHandler<MouseEvent>() {
+ 
+            @Override public void handle(MouseEvent mouseEvent) {
+                highlight_name_in_path();
+            }
+        };
+    
+        
         public Game(Stage set_s,Board set_b)
         {
             
@@ -1306,16 +1330,7 @@ public class Game {
 
                     set_from_pgn_lines();
                     
-                    Pattern get_name = Pattern.compile("([^\\\\\\/]+\\.pgn$)");
-                    Matcher name_matcher = get_name.matcher(path);
-            
-                    if(name_matcher.find())
-                    {
-                        int index=path.indexOf(name_matcher.group(0));
-                        pgn_name_text.requestFocus();
-                        pgn_name_text.positionCaret(index);
-                        pgn_name_text.selectRange(index,path.length()-4);
-                    }
+                    highlight_name_in_path();
                 }
                 
             });
@@ -1538,6 +1553,9 @@ public class Game {
             save_pgn_box.getChildren().add(save_as_pgn_button);
             pgn_name_text.setMinWidth(290);
             pgn_name_text.setStyle("-fx-font-size: 20px;-fx-font-family: monospace;-fx-font-weight: bold;");
+            
+            pgn_name_text.setOnMouseClicked(pgn_name_text_clicked);
+            
             save_pgn_box.getChildren().add(pgn_name_text);
             save_pgn_box.getChildren().add(save_to_pgn_button);
             save_pgn_box.getChildren().add(start_deep_button);
