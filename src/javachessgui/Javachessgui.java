@@ -15,7 +15,12 @@ public class Javachessgui extends Application {
     
     public static TextArea message_text=new TextArea();
     
-    final static String message_text_style="-fx-border-width: 5px;-fx-border-radius: 10px;-fx-border-style: solid;-fx-border-color: #ff7f7f;";
+    final static String message_text_style=
+            "-fx-border-width: 10px;"
+            + "-fx-border-radius: 10px;"
+            + "-fx-border-style: solid;"
+            + "-fx-control-inner-background: #efefff;"
+            + "-fx-border-color: #afafff;";
     
     public static int timer;
     public static void system_message(String what,int set_timer)
@@ -25,6 +30,7 @@ public class Javachessgui extends Application {
         
         message_text.setText(what);
         message_text.setStyle("-fx-opacity: 1;"+message_text_style);
+        message_text.setMinHeight(350);
         message_text.toFront();
                 
         Thread system_message_thread=new Thread(new Runnable()

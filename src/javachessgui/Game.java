@@ -1286,7 +1286,7 @@ public class Game {
                     String path=file.getPath();
                     
                     pgn_name_text.setText(path);
-
+                    
                     initial_dir=path.substring(0,path.lastIndexOf(File.separator));
 
                     MyFile config=new MyFile("config.txt");
@@ -1297,8 +1297,18 @@ public class Game {
                     pgn_lines=my_file.read_lines();
 
                     set_from_pgn_lines();
-                     
+                    
+                    Pattern get_name = Pattern.compile("([^\\\\\\/]+\\.pgn$)");
+                    Matcher name_matcher = get_name.matcher(path);
+            
+                    if(name_matcher.find())
+                    {
+                        int index=path.indexOf(name_matcher.group(0));
+                        pgn_name_text.requestFocus();
+                        pgn_name_text.positionCaret(index);
+                        pgn_name_text.selectRange(index,path.length()-4);
                     }
+                }
                 
             });
             
@@ -1323,7 +1333,9 @@ public class Game {
                         
                         my_file.write_content();
                         
-                        Javachessgui.system_message("Saved to file: "+path+"\n\nContent: "+my_file.content,3000);
+                        Javachessgui.system_message(
+                                "Saved to file: "+path+
+                                "\n\nContent:\n\n"+my_file.content,3000);
                         
                     }
                 }
