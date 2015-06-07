@@ -257,7 +257,7 @@ public class Game {
         
         private String fen_to_name(String fen)
         {
-            return "book\\"+Encode32.encode(fen, true)+".txt";
+            return "book"+File.separator+Encode32.encode(fen, true)+".txt";
         }
         
         private Hashtable get_pos(String fen)
@@ -1264,7 +1264,7 @@ public class Game {
                 return;
             }
             
-            Pattern get_name = Pattern.compile("([^\\\\\\/]+\\.pgn$)");
+            Pattern get_name = Pattern.compile("([^\\"+File.separator+"]+\\.pgn$)");
             Matcher name_matcher = get_name.matcher(path);
 
             if(name_matcher.find())
