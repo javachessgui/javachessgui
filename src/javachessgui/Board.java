@@ -2710,9 +2710,9 @@ public class Board {
         }
         
         int arc=piece_size/2;
-        int size=piece_size-2;
-        highlight_gc.fillRoundRect(gc_x(m.i1)+1,gc_y(m.j1)+3,size,size,arc,arc);
-        highlight_gc.fillRoundRect(gc_x(m.i2)+1,gc_y(m.j2)+3,size,size,arc,arc);
+        int size=piece_size-4;
+        highlight_gc.fillRoundRect(gc_x(m.i1)+2,gc_y(m.j1)+5,size,size,arc,arc);
+        highlight_gc.fillRoundRect(gc_x(m.i2)+2,gc_y(m.j2)+5,size,size,arc,arc);
         
     }
     	
