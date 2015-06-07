@@ -1556,6 +1556,15 @@ public class Game {
             
             pgn_name_text.setOnMouseClicked(pgn_name_text_clicked);
             
+            MyFile config=new MyFile("config.txt");
+        
+            String result=config.get_field("initial_dir");
+            
+            if(result!=null)
+            {
+                pgn_name_text.setText(result+File.separator+"default.pgn");
+            }
+            
             save_pgn_box.getChildren().add(pgn_name_text);
             save_pgn_box.getChildren().add(save_to_pgn_button);
             save_pgn_box.getChildren().add(start_deep_button);
