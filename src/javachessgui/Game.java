@@ -1470,7 +1470,7 @@ public class Game {
             
             vertical_box.getChildren().add(clip_box);
             
-            list.setMaxWidth(120);
+            list.setMaxWidth(115);
             
             book_box.getChildren().add(list);
                      
@@ -1550,9 +1550,14 @@ public class Game {
                 }
             });
             
+            int deep_height=38;
+            
+            save_as_pgn_button.setMinHeight(deep_height);
             save_pgn_box.getChildren().add(save_as_pgn_button);
             pgn_name_text.setMinWidth(290);
-            pgn_name_text.setStyle("-fx-font-size: 20px;-fx-font-family: monospace;-fx-font-weight: bold;");
+            pgn_name_text.setStyle("-fx-font-size: "
+                    + (deep_height-18)
+                    + "px;-fx-font-family: monospace;-fx-font-weight: bold;");
             
             pgn_name_text.setOnMouseClicked(pgn_name_text_clicked);
             
@@ -1566,7 +1571,9 @@ public class Game {
             }
             
             save_pgn_box.getChildren().add(pgn_name_text);
+            save_to_pgn_button.setMinHeight(deep_height);
             save_pgn_box.getChildren().add(save_to_pgn_button);
+            start_deep_button.setMinHeight(deep_height);
             save_pgn_box.getChildren().add(start_deep_button);
             
             vertical_box.getChildren().add(save_pgn_box);
@@ -1574,6 +1581,8 @@ public class Game {
             pgn_text.setWrapText(true);
             
             pgn_text.setStyle("-fx-display-caret: false;");
+            
+            pgn_text.setMinHeight(224);
             
             pgn_text.setOnMouseClicked(mouseHandler);
             

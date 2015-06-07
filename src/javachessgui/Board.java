@@ -83,6 +83,7 @@ import javafx.scene.*;
 import javafx.stage.*;
 
 
+
 public class Board {
     
     public Boolean deep_going=false;
